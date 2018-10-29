@@ -1,0 +1,37 @@
+
+<h2>Employee groups</h2>
+<table class="table table-bordered">
+    <thead class="thead-dark"><th>Group ID</th><th>Description</th></thead>
+{% for group in groups %}
+    <tr><td>{{ group.group_id }}</td><td>{{ group.group_name }}</td></tr>
+{% endfor %}
+</table>
+
+
+{% if user.access_level==1 %}
+<div class="container" id="add_employees">
+    <h2>Add a new employee</h2>
+    <form action="#">
+        <div class="form-group">
+            <label for="emp_name">Employee name:</label>
+            <input type="text" class="form-control" id="emp_name" placeholder="Enter name" name="emp_name">
+        </div>
+        <div class="form-group">
+            <label for="emp_group">Employee group:</label>
+            <input type="text" class="form-control" id="emp_group" placeholder="Enter employee group number" name="emp_group">
+        </div>
+        <button type="button" class="btn btn-primary btn-md" name="add_employee">Add</button>
+    </form>
+</div>
+{% endif %}
+
+
+
+<h2>Employees</h2>
+<table class="table table-bordered">
+    <thead class="thead-dark"><th>Employee ID</th><th>Employee name</th><th>Employee group</th><th>Username</th></thead>
+    {% for employee in employees %}
+    <tr {% if employee.access_level==1 %} class="bg-info" {% endif %}><td>{{ employee.employee_id }}</td><td>{{ employee.name }}</td><td>{{ employee.employee_group }}</td><td>{{ employee.username }}</td></tr>
+
+    {% endfor %}
+</table>
