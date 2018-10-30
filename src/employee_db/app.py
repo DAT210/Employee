@@ -42,10 +42,20 @@ def teardown_db(error):
 queries = {
     "get_all_employees" : "SELECT emp_id, emp_name, group_id FROM employee ORDER BY group_id",
     "get_all_users" : "SELECT emp_id, username, pass, access_lvl FROM users ORDER BY emp_id",
-    "get_employee_groups" : "SELECT group_id, group_name FROM employee_group ORDER BY group_id"
-    # or join on emp_id
+    "get_employee_groups" : "SELECT group_id, group_name FROM employee_group ORDER BY group_id",
+    "get_employee_by_id" : "", # collect info about the employee from employee table + username, access lvl from users table
+    # or join on emp_id for get_all_users
+    # add queries for insert / update employee
+    "add_employee" : "",
+    "add_user" : "", # check for valid employee
+    "remove_employee": "", # remove the user too
+    # add restrictions on username (or check that they work as expected)
+    "update_employee" : "", # needs some restrictions on what can or cannot be changed
+    "update_access_level" : "" # on user 
+    
 }
 
+# populates local structures with initial data from the database
 def get_current_data(db):
     employees.clear()
     users.clear()
@@ -85,8 +95,6 @@ def get_current_data(db):
     finally:
         cur.close()
     return(groups, employees, users, passwords)
-   
-
 
 # AUTHENTICATION #
 """
@@ -113,48 +121,51 @@ def correct_password(pwd):
     return True
     """
 
-# HR admin access #
-"""
-def add_user(name, username, pwd, group, lvl):
+# employee management methods, must go to a separate file
+
+def add_user(emp_id, username, password, access_level):
     return ""
 
-def remove_user(name):
-    #remove from users
+def remove_user(username):
+    
+    #remove from users - restrictions must be enforced by the db
+    #check for error
     return ""
 
-def remove_employee(name):
+def remove_employee(emp_id):
     #remove from users, then from employees
+    # get user, remove, then remove the employee
     return ""
 
-def update_group(name):
+def update_group(emp_id):
     #change the employee group
     return ""
 
 def update_access(username):
     #change access lvl
     return ""
-"""
+
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
     
     groups, employees, users, passwords = get_current_data(get_db()) 
-    return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": 4, "access_level": 1})
+    return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": 0, "access_level": 0})
 
 @app.route("/login", methods=['POST'])
 #@verify_token
+# sort out token auth, then replace session auth with it
 def login():
     session.pop('user', None)
     if request.form['username'] in passwords.keys(): #valid user
         if request.form['password'] == passwords[request.form['username']]: # valid password - check with hashing later
-            token = jwt.encode({'user': request.form['username'], 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+            #token = jwt.encode({'user': request.form['username'], 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
             session['user'] = request.form['username']
-            session['token'] = token #jsonify({'token': token.decode('UTF-8')})
+            #session['token'] = token #jsonify({'token': token.decode('UTF-8')})
             #find out group and access level
             group = access = ''
             for employee in employees:
                 if employee["username"] == session['user']:
-                    print(employee)
                     group = employee['employee_group_id']
                     access = employee['access_level']
 
@@ -167,6 +178,11 @@ def login():
 def logout():
     session.pop('user', None)
     return redirect(url_for('index'))
+
+@app.route("/update/employee")
+def update(emp_id):
+
+    pass
 
 if __name__ == '__main__':
     app.run(debug=True)

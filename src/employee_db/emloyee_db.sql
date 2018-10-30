@@ -42,6 +42,7 @@ INSERT INTO access_level (access_lvl, access_code) VALUES
 (2, "user");
 
 INSERT INTO employee_group (group_id, group_name) VALUES
+(0, "admin"),
 (1, "HR"),
 (2, "Food Preparation"),
 (3, "Delivery"),
@@ -53,7 +54,8 @@ INSERT INTO employee (emp_name, group_id) VALUES
 ("Food Prep Admin", 2),
 ("Food Prep User", 2),
 ("Delivery User", 3),
-("Serving User", 4);
+("Serving User", 4),
+("Admin", 0)
 
 INSERT INTO users (emp_id, username, pass, access_lvl) VALUES
 (1, "hr_admin", "pass", 1),
@@ -61,4 +63,5 @@ INSERT INTO users (emp_id, username, pass, access_lvl) VALUES
 (3, "menu_admin", "pass", 1),
 (4, "menu_user", "pass", 2),
 (5, "delivery_user", "pass", 2),
-(6, "serving_user", "pass", 2);
+(6, "serving_user", "pass", 2),
+(7, "admin", "admin", 0)
