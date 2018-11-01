@@ -105,12 +105,71 @@ def verify_token(f):
 def correct_password(pwd):
     return True
     """
-    
-@app.route("/", methods=['GET', 'POST'])
+
+@app.route("/")
 def index():
 
     groups, employees, users, passwords = get_current_data(get_db())
     return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": 0, "access_level": 0})
+
+# future endpoints
+
+# GET - returns the list of all users, POST creates a new one
+@app.route('/users', methods=['GET'])
+def get_users():
+    # token required, all auth lvls
+    return jsonify(users)
+
+
+@app.route('/users', methods=['POST'])
+def create_user(emp_id):
+    # protected: auth=0 can create admins, 1,2 - only users
+    return ""
+
+
+# get all information about a user by employee ID
+@app.route('/users/<emp_id>', methods=['GET'])
+def get_user(emp_id):
+    # token required, auth lvls < 2
+    return ""
+
+@app.route('/users/<emp_id>', methods=['PUT'])
+def edit_user(emp_id):
+    # change user auth lvl, requires auth lvl 0
+    return ""
+
+@app.route('/users/<emp_id>', methods=['DELETE'])
+def delete_user(emp_id):
+    # remove existing user, requires auth lvl 0
+    return ""
+
+@app.route('/employees', methods=['GET'])
+def get_emloyees():
+    return jsonify(employees)
+
+@app.route('/employees', methods=['POST'])
+def add_emloyee():
+    # auth = 0 or group = 1, auth = 1 (HR)
+    return ""
+
+@app.route('/employees/<emp_id>', methods=['GET'])
+def get_emloyee(emp_id):
+    return ""
+
+
+@app.route('/employees/<emp_id>', methods=['PUT'])
+def edit_employee(emp_id):
+    # auth = 0 or group=1 auth=1
+    return ""
+
+@app.route('/employee/<emp_id>', methods=['DELETE'])
+def delete_employee(emp_id):
+    # remove existing user, requires auth lvl 0
+    return ""
+
+@app.route('groups')
+def get_groups():
+    return jsonify(groups)
 
 @app.route("/login", methods=['POST'])
 #@verify_token
@@ -133,6 +192,7 @@ def login():
 
         return make_response('Wrong password!', 401)
     return make_response('Authentication failed!', 401)
+
 
 @app.route("/logout", methods=['POST'])
 def logout():
