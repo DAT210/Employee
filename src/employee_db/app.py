@@ -167,7 +167,7 @@ def delete_employee(emp_id):
     # remove existing user, requires auth lvl 0
     return ""
 
-@app.route('groups')
+@app.route('/groups')
 def get_groups():
     return jsonify(groups)
 
