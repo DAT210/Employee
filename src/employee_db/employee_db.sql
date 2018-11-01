@@ -50,6 +50,7 @@ CREATE TABLE `timesheet` (
 /* populate */
 
 INSERT INTO access_level (access_lvl, access_code) VALUES
+(0, "super admin"),
 (1, "admin"),
 (2, "user");
 
@@ -76,7 +77,7 @@ INSERT INTO users (emp_id, username, pass, access_lvl) VALUES
 (4, "menu_user", "pass", 2),
 (5, "delivery_user", "pass", 2),
 (6, "serving_user", "pass", 2),
-(7, "admin", "admin", 1);
+(7, "admin", "admin", 0);
 
 INSERT INTO `timesheet` VALUES 
 (6,'2018-10-31','13:00:00','21:00:00',NULL,NULL),
