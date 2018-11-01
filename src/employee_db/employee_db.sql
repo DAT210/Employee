@@ -36,6 +36,17 @@ CREATE TABLE users (
     FOREIGN KEY (emp_id) REFERENCES employee(emp_id)
 );
 
+CREATE TABLE `timesheet` (
+  `emp_id` int(11) NOT NULL,
+  `work_date` date NOT NULL,
+  `work_start` time NOT NULL,
+  `work_finish` time NOT NULL,
+  `clock_in` time DEFAULT NULL,
+  `clock_out` time DEFAULT NULL,
+  PRIMARY KEY (`emp_id`,`work_date`),
+  FOREIGN KEY (`emp_id`) REFERENCES `employee` (`emp_id`)
+);
+
 /* populate */
 
 INSERT INTO access_level (access_lvl, access_code) VALUES
@@ -66,3 +77,8 @@ INSERT INTO users (emp_id, username, pass, access_lvl) VALUES
 (5, "delivery_user", "pass", 2),
 (6, "serving_user", "pass", 2),
 (7, "admin", "admin", 1);
+
+INSERT INTO `timesheet` VALUES 
+(6,'2018-10-31','13:00:00','21:00:00',NULL,NULL),
+(5,'2018-10-31','08:00:00','16:00:00','12:16:38','12:16:45'),
+(4,'2018-10-31','06:00:00','12:00:00','05:59:45','12:00:01');
