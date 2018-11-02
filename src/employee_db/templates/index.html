@@ -8,8 +8,8 @@
     <table class="table table-bordered">
             <thead class="thead-dark"><th>Username</th><th>Password</th><th>Access level</th></thead>
     {% for user in users %}
-        <tr {% if user.access_level=="1" %} class="bg-info" {% endif %}><td>{{ user.username }}</td><td>{{ user.password }}</td>
-            <td >{% if user.access_level=="1" %} A noble admin {% else %} A lowly peasant {% endif %}</td></tr>
+        <tr {% if user.access_level<2 %} class="bg-info" {% endif %}><td>{{ user.username }}</td><td>{{ user.password }}</td>
+            <td >{% if user.access_level<2 %} admin {% else %} user {% endif %}</td></tr>
     {% endfor %}
     </table>
 </div>
@@ -39,18 +39,22 @@
 
 </div>
 
-{% if user.group_id=="1" %}
+USER AUTHORITY: {{ user.access_level }}
+
+{% if user.group_id<2 %}
 {% include "hr.html" %}
+{% endif %}
 
-{% elif user.group_id=="2" %}
+{% if user.group_id==2 or user.access_level==0 %}
 {% include "foodprep.html" %}
+{% endif %}
 
-{% elif user.group_id=="3" %}
+{% if user.group_id==3 or user.access_level==0 %}
 {% include "delivery.html" %}
+{% endif %}
 
-{% elif user.group_id=="4" %}
+{% if user.group_id==4 or user.access_level==0 %}
 {% include "serving.html" %}
-
 {% endif %}
 
 <div class="footer"> ... </div>

@@ -19,7 +19,7 @@ app.config['DB_HOST'] = 'localhost'
 
 employees = []
 users = []
-groups = []
+groups = {}
 passwords = {}
 
 def get_db():
@@ -51,32 +51,28 @@ def get_current_data(db):
     try:
         cur.execute(queries["get_employee_groups"])
         for (group_id, group_name) in cur:
-            groups.append({
-                "group_id": str(group_id),
-                "group_name": str(group_name)
-            })
+            groups[group_id] = group_name;
         cur.execute(queries["get_all_employees"])
-        for (emp_id, emp_name, group_id) in cur:
-            group = groups[group_id-1]["group_name"]
+        for (emp_id, emp_name, group_id, dupl, username, password, access_lvl) in cur:
             employees.append({
-                "employee_id": str(emp_id),
-                "name" : str(emp_name),
-                "employee_group_id": str(group_id),
-                "employee_group": str(group),
-                "username": "",
-                "access_level": ""
+                "employee_id": emp_id,
+                "name": emp_name,
+                "employee_group_id": group_id,
+                "employee_group": groups[group_id],
+                "username": username,
+                "access_level": access_lvl
             })
+            passwords[username] = password
         cur.execute(queries["get_all_users"])
         for (emp_id, username, pwd, access_lvl) in cur:
             users.append({
-                "employee_id": str(emp_id),
-                "username": str(username),
-                "password": str(pwd), # remove after the test stage
-                "access_level": str(access_lvl)
+                "employee_id": emp_id,
+                "username": username,
+                "password": pwd, # remove after the test stage
+                "access_level": access_lvl
             })
-            passwords[username] = str(pwd)
-            employees[emp_id-1]["username"] = str(username)
-            employees[emp_id-1]["access_level"] = str(access_lvl)
+            
+            
     finally:
         cur.close()
     return(groups, employees, users, passwords)
@@ -110,7 +106,7 @@ def correct_password(pwd):
 def index():
 
     groups, employees, users, passwords = get_current_data(get_db())
-    return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": 0, "access_level": 0})
+    return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": 666, "access_level": 666})
 
 # future endpoints
 
@@ -187,7 +183,7 @@ def login():
                 if employee["username"] == session['user']:
                     group = employee['employee_group_id']
                     access = employee['access_level']
-
+                    print(employee)
             return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": group, "access_level": access})
 
         return make_response('Wrong password!', 401)

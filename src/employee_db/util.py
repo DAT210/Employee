@@ -3,7 +3,7 @@ import mysql.connector
 
 
 queries = {
-    "get_all_employees" : "SELECT emp_id, emp_name, group_id FROM employee ORDER BY group_id",
+    "get_all_employees" : "SELECT * FROM employee JOIN users ON employee.emp_id=users.emp_id ORDER BY employee.emp_id",
     "get_all_users" : "SELECT emp_id, username, pass, access_lvl FROM users ORDER BY emp_id",
     "get_employee_groups" : "SELECT group_id, group_name FROM employee_group ORDER BY group_id",
     "get_employee_by_id" : "SELECT employee.*, users.username, users.access_lvl FROM employee JOIN users ON users.emp_id = employee.emp_id WHERE emp_id=%s",
