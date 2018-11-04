@@ -2,13 +2,13 @@
 
 {% block content %}
 
-{% if not session['user'] %}
+{% if not session['token'] %}
 <div class="container" id="test">
     <h2 class="text-warning">List of all the registered users for testing purposes only</h2>
     <table class="table table-bordered">
             <thead class="thead-dark"><th>Username</th><th>Password</th><th>Access level</th></thead>
     {% for user in users %}
-        <tr {% if user.access_level<2 %} class="bg-info" {% endif %}><td>{{ user.username }}</td><td>{{ user.password }}</td>
+        <tr {% if user.access_level==1 %} class="bg-info" {% elif user.access_level==0 %} class="bg-success" {% endif %}><td>{{ user.username }}</td><td>{{ user.password }}</td>
             <td >{% if user.access_level<2 %} admin {% else %} user {% endif %}</td></tr>
     {% endfor %}
     </table>
@@ -16,8 +16,8 @@
 {% endif %}
 
 
-<div class="container" id="login">
-        {% if not session['user'] %}
+<div class="container col-sm-10" id="login">
+        {% if not session['token'] %}
     <h2>Log in</h2>
     <form action="{{ url_for('login') }}" method="post">
         <div class="form-group">

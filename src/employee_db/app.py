@@ -61,8 +61,8 @@ def generate_auth_token():
 def verify_token(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.args.get('token')
-
+        token = request.cookies.get('token')
+        
         if not token:
             return jsonify({'message': 'No token provided!'}), 401
         try:
@@ -80,7 +80,10 @@ def correct_password(pwd):
 def index():
 
     groups, employees, users, passwords = get_current_data(get_db())
-    return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": 666, "access_level": 666})
+
+    resp = make_response(render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": 666, "access_level": 666}))
+    resp.set_cookie('token', '', max_age=-1)
+    return resp
 
 # future endpoints
 
@@ -142,6 +145,7 @@ def delete_user(emp_id):
     return jsonify(resp)
 
 @app.route('/employees', methods=['GET'])
+@verify_token
 def get_employees():
     employees, pwds = get_employee_list(get_db())
     return jsonify({"Employees" : employees })
@@ -177,34 +181,36 @@ def get_groups():
     groups = get_group_list(get_db())
     return jsonify({"Employee groups" : groups})
 
+
+
 @app.route("/login", methods=['POST'])
 #@verify_token
 # sort out token auth, then replace session auth with it
 def login():
-    session.pop('user', None)
+    session.pop('token', None)
     groups, employees, users, passwords = get_current_data(get_db())
     if request.form['username'] in passwords.keys(): #valid user
-        if check_password_hash(passwords[request.form['username']], request.form['password']): # valid password - check with hashing later
-            token = jwt.encode({'user': request.form['username'], 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.secret_key)
-            session['user'] = request.form['username']
-            #session['token'] = token #jsonify({'token': token.decode('UTF-8')})
-            #find out group and access level
+        if check_password_hash(passwords[request.form['username']], request.form['password']): # valid password
+            
             group = access = ''
             for employee in employees:
-                if employee["username"] == session['user']:
+                if employee["username"] == request.form['username']:
                     print(employee)
                     group = employee['employee_group_id']
                     access = employee['access_level']
                     print(employee)
-            return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": group, "access_level": access})
-
+                    token = jwt.encode({'user': request.form['username'], 'group' : group , 'auth' : access,  'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.secret_key)
+                    session['token'] = token
+            resp = make_response(render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": group, "access_level": access}))
+            resp.set_cookie('token', token)
+            return resp
         return make_response('Wrong password!', 401)
     return make_response('Authentication failed!', 401)
 
 
 @app.route("/logout", methods=['POST'])
 def logout():
-    session.pop('user', None)
+    session.pop('token', None)
     return redirect(url_for('index'))
 
 

@@ -1,4 +1,4 @@
-
+<div class="container" id="groups">
 <h2>Employee groups</h2>
 <table class="table table-bordered">
     <thead class="thead-dark"><th>Group ID</th><th>Description</th></thead>
@@ -6,7 +6,7 @@
     <tr><td>{{ key }}</td><td>{{ value }}</td></tr>
 {% endfor %}
 </table>
-
+</div>
 
 {% if user.access_level<2 %}
 <div class="container" id="add_employees">
