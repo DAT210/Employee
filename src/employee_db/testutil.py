@@ -80,7 +80,7 @@ def check_employee(db, emp_id):
 
     emp_list, _ = get_employee_list(db)
     for emp in emp_list:
-        if emp['employee_id'] == emp_id:
+        if emp['employee_id'] == int(emp_id):
             return True
     return False
 

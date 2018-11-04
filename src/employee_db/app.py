@@ -98,11 +98,23 @@ def create_user():
     # neverming for now
     got = request.get_json()
     
-    if not check_employee(get_db(), got['ID']):
-        return "No employee with ID " + str(got['ID'])
+    if got:
+        id = got['ID']
+        pwd = got['password']
+        username = got['username']
+        auth = got['auth']
+    else:
+        id = request.form['emp_id']
+        pwd = request.form['password']
+        username = request.form['username']
+        auth = request.form['auth']
 
-    saltypass = generate_password_hash(got['password'], method='sha256', salt_length=10)
-    resp = add_user(get_db(), got['ID'], got['username'], saltypass, got['auth'])
+    
+    if not check_employee(get_db(), id):
+        return "No employee with ID " + id
+
+    saltypass = generate_password_hash(pwd, method='sha256', salt_length=10)
+    resp = add_user(get_db(), id, username, saltypass, auth)
 
     return jsonify(resp)
 
@@ -138,8 +150,9 @@ def get_employees():
 def add_an_employee():
     # auth = 0 or group = 1, auth = 1 (HR)
     got = request.get_json()
-    resp = add_employee(get_db(), got['name'], got['group'])
-
+    if got : #got functional json
+        resp = add_employee(get_db(), got['name'], got['group'])
+    resp = add_employee(get_db(), request.form['name'], request.form['group'])
     return jsonify(resp)
 
 @app.route('/employees/<emp_id>', methods=['GET'])

@@ -11,20 +11,59 @@
 {% if user.access_level<2 %}
 <div class="container" id="add_employees">
     <h2>Add a new employee</h2>
-    <form action="#">
+    <form action="{{ url_for('.add_an_employee') }}" method="POST" enctype='application/json'>
         <div class="form-group">
-            <label for="emp_name">Employee name:</label>
-            <input type="text" class="form-control" id="emp_name" placeholder="Enter name" name="emp_name">
+            <label for="name">Employee name:</label>
+            <input type="text" class="form-control" id="name" placeholder="Enter name" name="name">
         </div>
         <div class="form-group">
-            <label for="emp_group">Employee group:</label>
-            <input type="text" class="form-control" id="emp_group" placeholder="Enter employee group number" name="emp_group">
+            <label for="group">Employee group:</label>
+            <input type="text" class="form-control" id="group" placeholder="Enter employee group number" name="group">
         </div>
-        <button type="button" class="btn btn-primary btn-md" name="add_employee">Add</button>
+        <button type="submit" class="btn btn-primary btn-md" name="add_employee">Add</button>
     </form>
 </div>
 {% endif %}
 
+{% if user.access_level == 0 %}
+<div class="container" id="add_user">
+    <h2>Add a new user</h2>
+    <form action="{{ url_for('.create_user') }}" method="POST">
+        <div class="form-group">
+            <label for="emp_id">Employee ID:</label>
+            <select class="form-control" id="emp_id" name="emp_id">
+                {% for emp in employees %}
+                <option>{{ emp.employee_id }}</option>
+                {% endfor %}
+            </select>    
+        </div>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" class="form-control" id="username" placeholder="Enter username" name="username">
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="text" class="form-control" id="password" placeholder="Enter password" name="password">
+        </div>
+        <div class="form-group">
+            <label for="auth">Access level:</label>
+            <select class="form-control" id="auth" name="auth">
+
+                <option>0</option>
+                <option>1</option>
+                <option>2</option>
+            </select>
+        </div>
+        <div class="form-group">
+            
+        </div>
+        <button type="submit" class="btn btn-primary btn-md" name="add_employee">Add</button>
+    </form>
+
+
+</div>
+
+{% endif %}
 
 
 <h2>Employees</h2>
