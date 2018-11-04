@@ -4,23 +4,22 @@ import datetime
 from functools import wraps
 import mysql.connector
 import secrets
+from werkzeug.security import generate_password_hash, check_password_hash
 from util import *
+from testutil import *
 
 app = Flask(__name__)
 
 secret = secrets.token_urlsafe()
 
+# don't be greedy, choose one
 app.secret_key = secret
-app.config['SECRET_KEY'] = secret
+#app.config['SECRET_KEY'] = secret
 app.config['DB_USER'] = 'root'
 app.config['DB_PWD'] = 'root'
 app.config['DB'] = 'employee'
 app.config['DB_HOST'] = 'localhost'
 
-employees = []
-users = []
-groups = {}
-passwords = {}
 
 def get_db():
     if not hasattr(g, "_database"):
@@ -42,47 +41,23 @@ def teardown_db(error):
 
 # populates local structures with initial data from the database
 def get_current_data(db):
-    employees.clear()
-    users.clear()
-    groups.clear()
-    passwords.clear()
+   # employees.clear()
+    #users.clear()
+    #groups.clear()
+    #passwords.clear()
 
-    cur = db.cursor()
-    try:
-        cur.execute(queries["get_employee_groups"])
-        for (group_id, group_name) in cur:
-            groups[group_id] = group_name;
-        cur.execute(queries["get_all_employees"])
-        for (emp_id, emp_name, group_id, dupl, username, password, access_lvl) in cur:
-            employees.append({
-                "employee_id": emp_id,
-                "name": emp_name,
-                "employee_group_id": group_id,
-                "employee_group": groups[group_id],
-                "username": username,
-                "access_level": access_lvl
-            })
-            passwords[username] = password
-        cur.execute(queries["get_all_users"])
-        for (emp_id, username, pwd, access_lvl) in cur:
-            users.append({
-                "employee_id": emp_id,
-                "username": username,
-                "password": pwd, # remove after the test stage
-                "access_level": access_lvl
-            })
-            
-            
-    finally:
-        cur.close()
-    return(groups, employees, users, passwords)
+    employees, passwords = get_employee_list(get_db())
+    users = get_user_list(get_db())
+    groups = get_group_list(get_db())
+
+    return (groups, employees, users, passwords)
 
 # AUTHENTICATION #
-"""
+
 def generate_auth_token():
     pass
 
-# token verification
+
 def verify_token(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -91,7 +66,7 @@ def verify_token(f):
         if not token:
             return jsonify({'message': 'No token provided!'}), 401
         try:
-            result = jwt.decode(token, app.config['SECRET_KEY'])
+            result = jwt.decode(token, app.secret_key)
         except:
             return jsonify({'message': 'Invalid token!'}), 403
 
@@ -100,7 +75,6 @@ def verify_token(f):
 
 def correct_password(pwd):
     return True
-    """
 
 @app.route("/")
 def index():
@@ -114,43 +88,64 @@ def index():
 @app.route('/users', methods=['GET'])
 def get_users():
     # token required, all auth lvls
-    return jsonify(users)
+    users = get_user_list(get_db())
+    return jsonify({"Users" : users})
 
 
 @app.route('/users', methods=['POST'])
-def create_user(emp_id):
+def create_user():
     # protected: auth=0 can create admins, 1,2 - only users
-    return ""
+    # neverming for now
+    got = request.get_json()
+    
+    if not check_employee(get_db(), got['ID']):
+        return "No employee with ID " + str(got['ID'])
+
+    saltypass = generate_password_hash(got['password'], method='sha256', salt_length=10)
+    resp = add_user(get_db(), got['ID'], got['username'], saltypass, got['auth'])
+
+    return jsonify(resp)
 
 
 # get all information about a user by employee ID
 @app.route('/users/<emp_id>', methods=['GET'])
-def get_user(emp_id):
+def get_one_user(emp_id):
     # token required, auth lvls < 2
-    return ""
+    resp = get_user(get_db(), emp_id)
+
+    return jsonify(resp)
 
 @app.route('/users/<emp_id>', methods=['PUT'])
 def edit_user(emp_id):
     # change user auth lvl, requires auth lvl 0
-    return ""
+    got = request.get_json()
+    print("Got: ", got)
+    resp = update_user(get_db(), emp_id, got['auth'])
+    return jsonify(resp)
 
 @app.route('/users/<emp_id>', methods=['DELETE'])
 def delete_user(emp_id):
+    resp = remove_user_by_id(get_db(), emp_id)
     # remove existing user, requires auth lvl 0
-    return ""
+    return jsonify(resp)
 
 @app.route('/employees', methods=['GET'])
-def get_emloyees():
-    return jsonify(employees)
+def get_employees():
+    employees, pwds = get_employee_list(get_db())
+    return jsonify({"Employees" : employees })
 
 @app.route('/employees', methods=['POST'])
-def add_emloyee():
+def add_an_employee():
     # auth = 0 or group = 1, auth = 1 (HR)
-    return ""
+    got = request.get_json()
+    resp = add_employee(get_db(), got['name'], got['group'])
+
+    return jsonify(resp)
 
 @app.route('/employees/<emp_id>', methods=['GET'])
-def get_emloyee(emp_id):
-    return ""
+def get_one_employee(emp_id):
+    resp = get_employee(get_db(), emp_id)
+    return jsonify(resp)
 
 
 @app.route('/employees/<emp_id>', methods=['PUT'])
@@ -158,29 +153,33 @@ def edit_employee(emp_id):
     # auth = 0 or group=1 auth=1
     return ""
 
-@app.route('/employee/<emp_id>', methods=['DELETE'])
+@app.route('/employees/<emp_id>', methods=['DELETE'])
 def delete_employee(emp_id):
     # remove existing user, requires auth lvl 0
-    return ""
+    resp = remove_employee_by_id(get_db(), emp_id)
+    return jsonify(resp)
 
 @app.route('/groups')
 def get_groups():
-    return jsonify(groups)
+    groups = get_group_list(get_db())
+    return jsonify({"Employee groups" : groups})
 
 @app.route("/login", methods=['POST'])
 #@verify_token
 # sort out token auth, then replace session auth with it
 def login():
     session.pop('user', None)
+    groups, employees, users, passwords = get_current_data(get_db())
     if request.form['username'] in passwords.keys(): #valid user
-        if request.form['password'] == passwords[request.form['username']]: # valid password - check with hashing later
-            #token = jwt.encode({'user': request.form['username'], 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+        if check_password_hash(passwords[request.form['username']], request.form['password']): # valid password - check with hashing later
+            token = jwt.encode({'user': request.form['username'], 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.secret_key)
             session['user'] = request.form['username']
             #session['token'] = token #jsonify({'token': token.decode('UTF-8')})
             #find out group and access level
             group = access = ''
             for employee in employees:
                 if employee["username"] == session['user']:
+                    print(employee)
                     group = employee['employee_group_id']
                     access = employee['access_level']
                     print(employee)

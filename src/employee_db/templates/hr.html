@@ -31,7 +31,7 @@
 <table class="table table-bordered">
     <thead class="thead-dark"><th>Employee ID</th><th>Employee name</th><th>Employee group</th><th>Username</th>{% if user.access_level<2 %}<th></th>{% endif %}</thead>
     {% for employee in employees %}
-    <tr {% if employee.access_level<2 %} class="bg-info" {% endif %}><td>{{ employee.employee_id }}</td><td>{{ employee.name }}</td><td>{{ employee.employee_group }}</td><td>{{ employee.username }}</td>{% if user.access_level<2 %}<td><form action="#" class="form form-inline"><button type="button" class="btn btn-danger btn-md" name="remove">Remove</button><button type="submit" class="btn btn-md btn-success">Edit</button></form></td>{% endif %}</tr>
+    <tr {% if user.access_level<2 %} class="bg-info" {% endif %}><td>{{ employee.employee_id }}</td><td>{{ employee.name }}</td><td>{{ employee.employee_group }}</td><td>{{ employee.username }}</td>{% if user.access_level<2 %}<td><form action="#" class="form form-inline"><button type="button" class="btn btn-danger btn-md" name="remove">Remove</button><button type="submit" class="btn btn-md btn-success">Edit</button></form></td>{% endif %}</tr>
 
     {% endfor %}
 </table>
