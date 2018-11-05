@@ -89,6 +89,7 @@ def index():
 
 # GET - returns the list of all users, POST creates a new one
 @app.route('/users', methods=['GET'])
+@verify_token
 def get_users():
     # token required, all auth lvls
     users = get_user_list(get_db())
@@ -96,6 +97,7 @@ def get_users():
 
 
 @app.route('/users', methods=['POST'])
+@verify_token
 def create_user():
     # protected: auth=0 can create admins, 1,2 - only users
     # neverming for now
@@ -124,6 +126,7 @@ def create_user():
 
 # get all information about a user by employee ID
 @app.route('/users/<emp_id>', methods=['GET'])
+@verify_token
 def get_one_user(emp_id):
     # token required, auth lvls < 2
     resp = get_user(get_db(), emp_id)
@@ -131,6 +134,7 @@ def get_one_user(emp_id):
     return jsonify(resp)
 
 @app.route('/users/<emp_id>', methods=['PUT'])
+@verify_token
 def edit_user(emp_id):
     # change user auth lvl, requires auth lvl 0
     got = request.get_json()
@@ -139,6 +143,7 @@ def edit_user(emp_id):
     return jsonify(resp)
 
 @app.route('/users/<emp_id>', methods=['DELETE'])
+@verify_token
 def delete_user(emp_id):
     resp = remove_user_by_id(get_db(), emp_id)
     # remove existing user, requires auth lvl 0
@@ -151,6 +156,7 @@ def get_employees():
     return jsonify({"Employees" : employees })
 
 @app.route('/employees', methods=['POST'])
+@verify_token
 def add_an_employee():
     # auth = 0 or group = 1, auth = 1 (HR)
     got = request.get_json()
@@ -160,31 +166,34 @@ def add_an_employee():
     return jsonify(resp)
 
 @app.route('/employees/<emp_id>', methods=['GET'])
+@verify_token
 def get_one_employee(emp_id):
     resp = get_employee(get_db(), emp_id)
     return jsonify(resp)
 
 
 @app.route('/employees/<emp_id>', methods=['PUT'])
+@verify_token
 def edit_employee(emp_id):
     # auth = 0 or group=1 auth=1
     return ""
 
 @app.route('/employees/<emp_id>', methods=['DELETE'])
+@verify_token
 def delete_employee(emp_id):
     # remove existing user, requires auth lvl 0
     resp = remove_employee_by_id(get_db(), emp_id)
     return jsonify(resp)
 
 @app.route('/groups')
+@verify_token
 def get_groups():
     groups = get_group_list(get_db())
     return jsonify({"Employee groups" : groups})
 
 
 
-@app.route("/login", methods=['POST'])
-#@verify_token
+@app.route("/login", methods=['GET', 'POST'])
 # sort out token auth, then replace session auth with it
 def login():
     session.pop('token', None)
