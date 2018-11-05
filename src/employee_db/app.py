@@ -17,6 +17,7 @@ app.config['DB_PWD'] = 'root'
 app.config['DB'] = 'employee'
 app.config['DB_HOST'] = 'localhost'
 
+
 employees = []
 users = []
 groups = []
@@ -42,44 +43,16 @@ def teardown_db(error):
 
 # populates local structures with initial data from the database
 def get_current_data(db):
-    employees.clear()
-    users.clear()
-    groups.clear()
-    passwords.clear()
+   # employees.clear()
+    #users.clear()
+    #groups.clear()
+    #passwords.clear()
 
-    cur = db.cursor()
-    try:
-        cur.execute(queries["get_employee_groups"])
-        for (group_id, group_name) in cur:
-            groups.append({
-                "group_id": str(group_id),
-                "group_name": str(group_name)
-            })
-        cur.execute(queries["get_all_employees"])
-        for (emp_id, emp_name, group_id) in cur:
-            group = groups[group_id-1]["group_name"]
-            employees.append({
-                "employee_id": str(emp_id),
-                "name" : str(emp_name),
-                "employee_group_id": str(group_id),
-                "employee_group": str(group),
-                "username": "",
-                "access_level": ""
-            })
-        cur.execute(queries["get_all_users"])
-        for (emp_id, username, pwd, access_lvl) in cur:
-            users.append({
-                "employee_id": str(emp_id),
-                "username": str(username),
-                "password": str(pwd), # remove after the test stage
-                "access_level": str(access_lvl)
-            })
-            passwords[username] = str(pwd)
-            employees[emp_id-1]["username"] = str(username)
-            employees[emp_id-1]["access_level"] = str(access_lvl)
-    finally:
-        cur.close()
-    return(groups, employees, users, passwords)
+    employees, passwords = get_employee_list(get_db())
+    users = get_user_list(get_db())
+    groups = get_group_list(get_db())
+
+    return (groups, employees, users, passwords)
 
 # AUTHENTICATION #
 """
