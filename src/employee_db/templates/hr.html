@@ -71,7 +71,7 @@
     <thead class="thead-dark"><th>Employee ID</th><th>Employee name</th><th>Employee group</th><th>Username</th>{% if user.access_level<2 %}<th>Edit</th><th>Remove</th>{% endif %}</thead>
     {% for employee in employees %}
     <tr {% if not employee.access_level %} class="bg-secondary" {% elif employee.access_level<2 %} class="bg-info" {% endif %}><td>{{ employee.employee_id }}</td><td>{{ employee.name }}</td><td>{{ employee.employee_group_id }}</td><td>{{ employee.username }}</td>{% if user.access_level<2 %}<td><form action="{{ url_for('.edit_employee', emp_id = employee.employee_id) }}" class="form form-inline" method="PUT">
-            <input type="text" class="form-control" id="name" placeholder="Enter new name" name="name"><button type="submit" class="btn btn-md btn-success">Edit</button></form></td><td><form action="{{ url_for('.delete_employee', emp_id = employee.employee_id) }}" class="form form-inline" method="DELETE"><button type="submit" class="btn btn-danger btn-md" name="remove">Remove</button></form></td>{% endif %}</tr>
+            <input type="text" class="form-control" id="name" placeholder="Enter new name" name="name"><button type="submit" class="btn btn-md btn-success">Edit</button></form></td><td><form action="{{ url_for('.delete_employee_form', emp_id = employee.employee_id) }}" class="form form-inline" method="POST"><button type="submit" class="btn btn-danger btn-md" name="remove">Remove</button></form></td>{% endif %}</tr>
 
     {% endfor %}
 </table>

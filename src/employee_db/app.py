@@ -201,9 +201,14 @@ def edit_employee(emp_id):
 @verify_admin_token
 def delete_employee(emp_id):
     # remove existing user, requires auth lvl 0
-
     resp = remove_employee_by_id(get_db(), emp_id)
     return jsonify(resp)
+
+@app.route('/delete_employee_form/<emp_id>', methods=['POST'])
+@verify_admin_token
+def delete_employee_form(emp_id):
+    _ = remove_employee_by_id(get_db(), emp_id)
+    return redirect(url_for('login'))
 
 @app.route('/groups')
 @verify_token
