@@ -5,16 +5,12 @@ from functools import wraps
 import mysql.connector
 import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
-from util import *
+#from util import *
 from testutil import *
 
 app = Flask(__name__)
 
-secret = secrets.token_urlsafe()
-
-# don't be greedy, choose one
-app.secret_key = secret
-#app.config['SECRET_KEY'] = secret
+app.secret_key = secrets.token_urlsafe()
 app.config['DB_USER'] = 'root'
 app.config['DB_PWD'] = 'root'
 app.config['DB'] = 'employee'
@@ -83,7 +79,7 @@ def verify_admin_token(f):
             return jsonify({'message': 'Invalid token!'}), 403
 
         if payload['auth'] > 1:
-            return jsonify({'message': 'Insufficient authority level!'}, 401.4)
+            return jsonify({'message': 'Insufficient authority level!'})
 
         return f(*args, **kwargs)
     return decorated
@@ -103,7 +99,7 @@ def index():
 
 # GET - returns the list of all users, POST creates a new one
 @app.route('/users', methods=['GET'])
-@verify_token
+@verify_admin_token
 def get_users():
     # token required, all auth lvls
     users = get_user_list(get_db())
@@ -130,7 +126,7 @@ def create_user():
 
     
     if not check_employee(get_db(), id):
-        return "No employee with ID " + id
+        return jsonify("No employee with ID " + id)
 
     saltypass = generate_password_hash(pwd, method='sha256', salt_length=10)
     resp = add_user(get_db(), id, username, saltypass, auth)
@@ -140,7 +136,7 @@ def create_user():
 
 # get all information about a user by employee ID
 @app.route('/users/<emp_id>', methods=['GET'])
-@verify_token
+@verify_admin_token
 def get_one_user(emp_id):
     # token required, auth lvls < 2
     resp = get_user(get_db(), emp_id)
@@ -220,31 +216,47 @@ def get_groups():
 @app.route("/login", methods=['GET', 'POST'])
 # sort out token auth, then replace session auth with it
 def login():
-    session.pop('token', None)
     groups, employees, users, passwords = get_current_data(get_db())
-    if request.form['username'] in passwords.keys(): #valid user
-        if check_password_hash(passwords[request.form['username']], request.form['password']): # valid password
-            
-            group = access = ''
-            for employee in employees:
-                if employee["username"] == request.form['username']:
-                    print(employee)
-                    group = employee['employee_group_id']
-                    access = employee['access_level']
-                    # set claims
-                    payload = {
-                        'user': request.form['username'], 
-                        'group' : group , 
-                        'auth' : access,  
-                        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
-                        }
-                    token = jwt.encode(payload, app.secret_key)
-                    session['token'] = token
-            resp = make_response(render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": group, "access_level": access}))
-            resp.set_cookie('token', token)
-            return resp
-        return make_response('Wrong password!', 401)
-    return make_response('Authentication failed!', 401)
+    if request.method == 'POST':
+        session.pop('token', None)
+        
+        if request.form['username'] in passwords.keys(): #valid user
+            if check_password_hash(passwords[request.form['username']], request.form['password']): # valid password
+                
+                group = access = ''
+                for employee in employees:
+                    if employee["username"] == request.form['username']:
+                        print(employee)
+                        group = employee['employee_group_id']
+                        access = employee['access_level']
+                        # set claims
+                        payload = {
+                            'user': request.form['username'], 
+                            'group' : group , 
+                            'auth' : access,  
+                            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+                            }
+                        token = jwt.encode(payload, app.secret_key)
+                        session['token'] = token
+                resp = make_response(render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": group, "access_level": access}))
+                resp.set_cookie('token', token)
+                return resp
+            return make_response('Wrong password!', 401)
+        return make_response('Authentication failed!', 401)
+    else:
+        token = request.cookies.get('token')
+        if not token:
+            try:
+                payload = session['token']
+            except:
+                return jsonify("Please log in!")
+        else:
+            try:
+                payload = jwt.decode(token, app.secret_key)
+            except:
+                return jsonify("No token provided!")
+        print("Payload: ", payload)
+        return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": payload['group'], "access_level": payload['auth']})
 
 
 @app.route("/logout", methods=['POST'])
