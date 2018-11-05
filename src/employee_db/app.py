@@ -54,9 +54,6 @@ def get_current_data(db):
 
 # AUTHENTICATION #
 
-def generate_auth_token():
-    pass
-
 
 def verify_token(f):
     @wraps(f)
@@ -73,8 +70,25 @@ def verify_token(f):
         return f(*args, **kwargs)
     return decorated
 
-def correct_password(pwd):
-    return True
+def verify_admin_token(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('token')
+        if not token:
+            return jsonify({'message': 'No token provided!'}), 401
+        try:
+            payload = jwt.decode(token, app.secret_key)
+            
+        except:
+            return jsonify({'message': 'Invalid token!'}), 403
+
+        if payload['auth'] > 1:
+            return jsonify({'message': 'Insufficient authority level!'}, 401.4)
+
+        return f(*args, **kwargs)
+    return decorated
+        
+
 
 @app.route("/")
 def index():
@@ -97,7 +111,7 @@ def get_users():
 
 
 @app.route('/users', methods=['POST'])
-@verify_token
+@verify_admin_token
 def create_user():
     # protected: auth=0 can create admins, 1,2 - only users
     # neverming for now
@@ -134,7 +148,7 @@ def get_one_user(emp_id):
     return jsonify(resp)
 
 @app.route('/users/<emp_id>', methods=['PUT'])
-@verify_token
+@verify_admin_token
 def edit_user(emp_id):
     # change user auth lvl, requires auth lvl 0
     got = request.get_json()
@@ -143,7 +157,7 @@ def edit_user(emp_id):
     return jsonify(resp)
 
 @app.route('/users/<emp_id>', methods=['DELETE'])
-@verify_token
+@verify_admin_token
 def delete_user(emp_id):
     resp = remove_user_by_id(get_db(), emp_id)
     # remove existing user, requires auth lvl 0
@@ -156,13 +170,14 @@ def get_employees():
     return jsonify({"Employees" : employees })
 
 @app.route('/employees', methods=['POST'])
-@verify_token
+@verify_admin_token
 def add_an_employee():
     # auth = 0 or group = 1, auth = 1 (HR)
     got = request.get_json()
     if got : #got functional json
         resp = add_employee(get_db(), got['name'], got['group'])
-    resp = add_employee(get_db(), request.form['name'], request.form['group'])
+    else:
+        resp = add_employee(get_db(), request.form['name'], request.form['group'])
     return jsonify(resp)
 
 @app.route('/employees/<emp_id>', methods=['GET'])
@@ -173,15 +188,24 @@ def get_one_employee(emp_id):
 
 
 @app.route('/employees/<emp_id>', methods=['PUT'])
-@verify_token
+@verify_admin_token
 def edit_employee(emp_id):
     # auth = 0 or group=1 auth=1
-    return ""
+    got = request.get_json()
+    if got:
+        name = got['name']
+    else:
+        name = request.forms['name']
+    resp = update_employee(get_db(), emp_id, name)
+    return jsonify(resp)
+
+
 
 @app.route('/employees/<emp_id>', methods=['DELETE'])
-@verify_token
+@verify_admin_token
 def delete_employee(emp_id):
     # remove existing user, requires auth lvl 0
+
     resp = remove_employee_by_id(get_db(), emp_id)
     return jsonify(resp)
 
@@ -207,8 +231,14 @@ def login():
                     print(employee)
                     group = employee['employee_group_id']
                     access = employee['access_level']
-                    print(employee)
-                    token = jwt.encode({'user': request.form['username'], 'group' : group , 'auth' : access,  'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.secret_key)
+                    # set claims
+                    payload = {
+                        'user': request.form['username'], 
+                        'group' : group , 
+                        'auth' : access,  
+                        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+                        }
+                    token = jwt.encode(payload, app.secret_key)
                     session['token'] = token
             resp = make_response(render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": group, "access_level": access}))
             resp.set_cookie('token', token)

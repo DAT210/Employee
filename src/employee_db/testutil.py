@@ -128,7 +128,7 @@ def get_employee(db, emp_id):
     return "Employee not found"
 
 def remove_employee_by_id(db, emp_id):
-    if not check_employee:
+    if not check_employee(db, emp_id):
         return "No such employee"
     emp = get_employee(db, emp_id)
     if emp['username']:
