@@ -25,9 +25,20 @@ queries = {
 
 # TEMP for testing
 
+def get_current_data(db):
+
+    employees, passwords = get_employee_list(db)
+    users = get_user_list(db)
+    groups = get_group_list(db)
+
+    return (groups, employees, users, passwords)
+
+## all the lists ##
+
 def get_employee_list(db):
     the_list = []
     passwords = {}
+    groups = get_group_list(db)
     cur = db.cursor()
     try:        
         cur.execute(queries["get_all_employees"])
@@ -36,7 +47,7 @@ def get_employee_list(db):
                 "employee_id": emp_id,
                 "name": emp_name,
                 "employee_group_id": group_id,
-                #"employee_group": groups[group_id],
+                "employee_group": groups[group_id],
                 "username": username,
                 "access_level": access_lvl
             })
@@ -54,7 +65,7 @@ def get_user_list(db):
             the_list.append({
                 "employee_id": emp_id,
                 "username": username,
-                "password": pwd, # remove after the test stage
+                # "password": pwd, 
                 "access_level": access_lvl
             })
     finally:
@@ -75,6 +86,7 @@ def get_group_list(db):
 def get_auth_list():
     pass
 
+## Employees ##
 
 def check_employee(db, emp_id): 
 
@@ -83,7 +95,6 @@ def check_employee(db, emp_id):
         if emp['employee_id'] == int(emp_id):
             return True
     return False
-
 
 def add_employee(db, name, group_id):
     cur = db.cursor()
@@ -94,31 +105,7 @@ def add_employee(db, name, group_id):
         return "Error {}".format(err.msg)
     finally:
         cur.close()
-    return "Created new employee!"
-
-
-def add_user(db, emp_id, username, password, access_level):
-    if not check_employee(db, emp_id):
-        return "Cannot create a new user: no employee with that id"
-    
-    cur = db.cursor()
-    try:
-        cur.execute(queries["add_user"], (emp_id, username, password, access_level))
-        db.commit()
-    except mysql.connector.Error as err:
-        print("Error {}".format(err.msg))
-        return "Error {}".format(err.msg)
-    finally:
-        cur.close()
-
-    return "User successfully created"
-
-def get_user(db, emp_id):
-    user_list = get_user_list(db)
-    for user in user_list:
-        if user['employee_id'] == int(emp_id):
-            return user
-    return "User not found"    
+    return "New employee added!"
 
 def get_employee(db, emp_id):
     emp_list, _ = get_employee_list(db)
@@ -137,12 +124,38 @@ def remove_employee_by_id(db, emp_id):
     try:
         cur.execute(queries["remove_employee_by_id"] % emp_id)
         db.commit()
-    except mysql.connector.Error as err:
-        
+    except mysql.connector.Error as err:        
         return ("Error {}".format(err.msg))
     finally:
         cur.close()
+
     return "Employee successfully deleted"
+
+
+
+## Users ##
+
+def add_user(db, emp_id, username, password, access_level):
+    if not check_employee(db, emp_id):
+        return "Cannot create a new user: no employee with that id"
+    
+    cur = db.cursor()
+    try:
+        cur.execute(queries["add_user"], (emp_id, username, password, access_level))
+        db.commit()
+    except mysql.connector.Error as err:
+        return "Error {}".format(err.msg)
+    finally:
+        cur.close()
+
+    return "User successfully created"
+
+def get_user(db, emp_id):
+    user_list = get_user_list(db)
+    for user in user_list:
+        if user['employee_id'] == int(emp_id):
+            return user
+    return "User not found"    
 
 def remove_user_by_id(db, emp_id):
     cur = db.cursor()
@@ -158,17 +171,14 @@ def remove_user_by_id(db, emp_id):
 
 def update_user(db, emp_id, auth):
     cur = db.cursor()
-    print("Auth now: ", auth)
     try:
         cur.execute(queries['update_access_level'], (auth, emp_id))
         db.commit()
     except mysql.connector.Error as err:
         return "Error {}".format(err.msg)
     finally:
-        
         cur.close()
     return "User access level updated!"
-
 
 def update_employee(db, emp_id, name):
     if not check_employee(db,emp_id):
@@ -185,9 +195,6 @@ def update_employee(db, emp_id, name):
     return "Employee ", name, " updated!"
 
 # END OF TEMP
-
-
-
 
 
 def remove_user(db, username):

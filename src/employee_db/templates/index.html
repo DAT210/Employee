@@ -6,9 +6,9 @@
 <div class="container" id="test">
     <h2 class="text-warning">List of all the registered users for testing purposes only</h2>
     <table class="table table-bordered">
-            <thead class="thead-dark"><th>Username</th><th>Password</th><th>Access level</th></thead>
+            <thead class="thead-dark"><th>Username</th><th>Access level</th></thead>
     {% for user in users %}
-        <tr {% if user.access_level==1 %} class="bg-info" {% elif user.access_level==0 %} class="bg-success" {% endif %}><td>{{ user.username }}</td><td>{{ user.password }}</td>
+        <tr {% if user.access_level==1 %} class="bg-info" {% elif user.access_level==0 %} class="bg-success" {% endif %}><td>{{ user.username }}</td></td>
             <td >{% if user.access_level<2 %} admin {% else %} user {% endif %}</td></tr>
     {% endfor %}
     </table>

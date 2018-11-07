@@ -10,7 +10,9 @@ from testutil import *
 
 app = Flask(__name__)
 
-app.secret_key = secrets.token_urlsafe()
+# change for the real keys on deployment
+app.secret_key = open('jwtRS256.key').read()  
+app.public_key = open('jwtRS256.key.pub').read()
 app.config['DB_USER'] = 'root'
 app.config['DB_PWD'] = 'root'
 app.config['DB'] = 'employee'
@@ -28,44 +30,32 @@ def get_db():
     return g._database
 
 @app.teardown_appcontext
-
 def teardown_db(error):
     db = getattr(g, "_database", None)
     if db is not None:
         db.close()
 
 
-# populates local structures with initial data from the database
-def get_current_data(db):
-   # employees.clear()
-    #users.clear()
-    #groups.clear()
-    #passwords.clear()
-
-    employees, passwords = get_employee_list(get_db())
-    users = get_user_list(get_db())
-    groups = get_group_list(get_db())
-
-    return (groups, employees, users, passwords)
-
 # AUTHENTICATION #
 
-
+# user logged in
 def verify_token(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        
         token = request.cookies.get('token')
         
         if not token:
             return jsonify({'message': 'No token provided!'}), 401
         try:
-            result = jwt.decode(token, app.secret_key)
+            result = jwt.decode(token, app.public_key, algorithms=['RS256'])
         except:
             return jsonify({'message': 'Invalid token!'}), 403
 
         return f(*args, **kwargs)
     return decorated
 
+# user logged in and is admin
 def verify_admin_token(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -73,7 +63,7 @@ def verify_admin_token(f):
         if not token:
             return jsonify({'message': 'No token provided!'}), 401
         try:
-            payload = jwt.decode(token, app.secret_key)
+            payload = jwt.decode(token, app.public_key, algorithms=['RS256'])
             
         except:
             return jsonify({'message': 'Invalid token!'}), 403
@@ -84,80 +74,77 @@ def verify_admin_token(f):
         return f(*args, **kwargs)
     return decorated
         
-
+# front end routes #
 
 @app.route("/")
 def index():
 
     groups, employees, users, passwords = get_current_data(get_db())
-
     resp = make_response(render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": 666, "access_level": 666}))
     resp.set_cookie('token', '', max_age=-1)
     return resp
 
-# future endpoints
 
-# GET - returns the list of all users, POST creates a new one
-@app.route('/users', methods=['GET'])
-@verify_admin_token
-def get_users():
-    # token required, all auth lvls
-    users = get_user_list(get_db())
-    return jsonify({"Users" : users})
-
-
-@app.route('/users', methods=['POST'])
-@verify_admin_token
-def create_user():
-    # protected: auth=0 can create admins, 1,2 - only users
-    # neverming for now
-    got = request.get_json()
-    
-    if got:
-        id = got['ID']
-        pwd = got['password']
-        username = got['username']
-        auth = got['auth']
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    groups, employees, users, passwords = get_current_data(get_db())
+    if request.method == 'POST':
+        session.pop('token', None)
+        
+        if request.form['username'] in passwords.keys(): #valid user
+            if check_password_hash(passwords[request.form['username']], request.form['password']): # valid password
+                group = auth = ''
+                for employee in employees:
+                    if employee["username"] == request.form['username']:
+                        group = employee['employee_group_id']
+                        auth = employee['access_level']
+                        # set claims
+                        payload = {
+                            'role' : "employee" , 
+                            'user': request.form['username'], 
+                            'group' : group , 
+                            'auth' : auth,  
+                            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+                            }
+                        token = jwt.encode(payload, app.secret_key, algorithm='RS256').decode('utf-8')
+                        session['token'] = token
+                resp = make_response(render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": group, "access_level": auth}))
+                resp.set_cookie('token', token)
+                return resp
+            return make_response('Wrong password!', 401)
+        return make_response('Authentication failed!', 401)
     else:
-        id = request.form['emp_id']
-        pwd = request.form['password']
-        username = request.form['username']
-        auth = request.form['auth']
+        token = request.cookies.get('token')
+        if not token:
+            try:
+                payload = session['token']
+            except:
+                return jsonify("Please log in!")
+        else:
+            try:
+                payload = jwt.decode(token, app.secret_key, algorithm='RS256').decode('utf-8')
+            except:
+                return jsonify("No token provided!")
+        print("Payload: ", payload)
+        return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": payload['group'], "access_level": payload['auth']})
 
-    
-    if not check_employee(get_db(), id):
-        return jsonify("No employee with ID " + id)
 
-    saltypass = generate_password_hash(pwd, method='sha256', salt_length=10)
-    resp = add_user(get_db(), id, username, saltypass, auth)
-
-    return jsonify(resp)
+@app.route("/logout", methods=['POST'])
+def logout():
+    session.pop('token', None)
+    return redirect(url_for('index'))
 
 
-# get all information about a user by employee ID
-@app.route('/users/<emp_id>', methods=['GET'])
+@app.route('/delete_employee_form/<emp_id>', methods=['POST'])
 @verify_admin_token
-def get_one_user(emp_id):
-    # token required, auth lvls < 2
-    resp = get_user(get_db(), emp_id)
+def delete_employee_form(emp_id):
+    _ = remove_employee_by_id(get_db(), emp_id)
+    return redirect(url_for('login'))
 
-    return jsonify(resp)
 
-@app.route('/users/<emp_id>', methods=['PUT'])
-@verify_admin_token
-def edit_user(emp_id):
-    # change user auth lvl, requires auth lvl 0
-    got = request.get_json()
-    print("Got: ", got)
-    resp = update_user(get_db(), emp_id, got['auth'])
-    return jsonify(resp)
+# API endpoints #
 
-@app.route('/users/<emp_id>', methods=['DELETE'])
-@verify_admin_token
-def delete_user(emp_id):
-    resp = remove_user_by_id(get_db(), emp_id)
-    # remove existing user, requires auth lvl 0
-    return jsonify(resp)
+## Employees ##
 
 @app.route('/employees', methods=['GET'])
 @verify_token
@@ -182,7 +169,6 @@ def get_one_employee(emp_id):
     resp = get_employee(get_db(), emp_id)
     return jsonify(resp)
 
-
 @app.route('/employees/<emp_id>', methods=['PUT'])
 @verify_admin_token
 def edit_employee(emp_id):
@@ -195,8 +181,6 @@ def edit_employee(emp_id):
     resp = update_employee(get_db(), emp_id, name)
     return jsonify(resp)
 
-
-
 @app.route('/employees/<emp_id>', methods=['DELETE'])
 @verify_admin_token
 def delete_employee(emp_id):
@@ -204,70 +188,68 @@ def delete_employee(emp_id):
     resp = remove_employee_by_id(get_db(), emp_id)
     return jsonify(resp)
 
-@app.route('/delete_employee_form/<emp_id>', methods=['POST'])
+## Users ##
+
+@app.route('/users', methods=['GET'])
 @verify_admin_token
-def delete_employee_form(emp_id):
-    _ = remove_employee_by_id(get_db(), emp_id)
-    return redirect(url_for('login'))
+def get_users():
+    # token required, all auth lvls
+    users = get_user_list(get_db())
+    return jsonify({"Users" : users})
+
+@app.route('/users', methods=['POST'])
+@verify_admin_token
+def create_user():
+    got = request.get_json()    
+    if got:
+        id = got['ID']
+        pwd = got['password']
+        username = got['username']
+        auth = got['auth']
+    else:
+        id = request.form['emp_id']
+        pwd = request.form['password']
+        username = request.form['username']
+        auth = request.form['auth']
+
+    
+    if not check_employee(get_db(), id):
+        return jsonify("No employee with ID " + id)
+
+    saltypass = generate_password_hash(pwd, method='sha256', salt_length=10)
+    resp = add_user(get_db(), id, username, saltypass, auth)
+
+    return jsonify(resp)
+
+# get all information about a user by employee ID
+@app.route('/users/<emp_id>', methods=['GET'])
+@verify_admin_token
+def get_one_user(emp_id):
+    resp = get_user(get_db(), emp_id)
+
+    return jsonify(resp)
+
+@app.route('/users/<emp_id>', methods=['PUT'])
+@verify_admin_token
+def edit_user(emp_id):
+    got = request.get_json()
+    print("Got: ", got)
+    resp = update_user(get_db(), emp_id, got['auth'])
+    return jsonify(resp)
+
+@app.route('/users/<emp_id>', methods=['DELETE'])
+@verify_admin_token
+def delete_user(emp_id):
+    resp = remove_user_by_id(get_db(), emp_id)
+    return jsonify(resp)
+
+## Misc ##
 
 @app.route('/groups')
 @verify_token
 def get_groups():
     groups = get_group_list(get_db())
     return jsonify({"Employee groups" : groups})
-
-
-
-@app.route("/login", methods=['GET', 'POST'])
-# sort out token auth, then replace session auth with it
-def login():
-    groups, employees, users, passwords = get_current_data(get_db())
-    if request.method == 'POST':
-        session.pop('token', None)
-        
-        if request.form['username'] in passwords.keys(): #valid user
-            if check_password_hash(passwords[request.form['username']], request.form['password']): # valid password
-                
-                group = access = ''
-                for employee in employees:
-                    if employee["username"] == request.form['username']:
-                        print(employee)
-                        group = employee['employee_group_id']
-                        access = employee['access_level']
-                        # set claims
-                        payload = {
-                            'user': request.form['username'], 
-                            'group' : group , 
-                            'auth' : access,  
-                            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
-                            }
-                        token = jwt.encode(payload, app.secret_key)
-                        session['token'] = token
-                resp = make_response(render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": group, "access_level": access}))
-                resp.set_cookie('token', token)
-                return resp
-            return make_response('Wrong password!', 401)
-        return make_response('Authentication failed!', 401)
-    else:
-        token = request.cookies.get('token')
-        if not token:
-            try:
-                payload = session['token']
-            except:
-                return jsonify("Please log in!")
-        else:
-            try:
-                payload = jwt.decode(token, app.secret_key)
-            except:
-                return jsonify("No token provided!")
-        print("Payload: ", payload)
-        return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": payload['group'], "access_level": payload['auth']})
-
-
-@app.route("/logout", methods=['POST'])
-def logout():
-    session.pop('token', None)
-    return redirect(url_for('index'))
 
 
 @app.route("/addEmployee", methods=["POST"])
