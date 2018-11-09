@@ -7,13 +7,26 @@ queries = {
     "get_all_users" : "SELECT emp_id, username, pass, access_lvl FROM users ORDER BY emp_id",
     "get_employee_groups" : "SELECT group_id, group_name FROM employee_group ORDER BY group_id",
     "get_employee_by_id" : "SELECT employee.*, users.username, users.access_lvl FROM employee JOIN users ON users.emp_id = employee.emp_id WHERE emp_id=%s",
+    "get_emp_id" : "SELECT emp_id FROM users WHERE username=%s",
     "add_employee" : "INSERT INTO employee (emp_name, group_id) VALUES (%s, %s)",
     "add_user" : "INSERT INTO users (emp_id, username, pass, access_lvl) VALUES(%s, %s, %s, %s)",
+    "remove_user_by_id": "DELETE FROM users WHERE emp_id=%s",
+    "remove_employee_by_id": "DELETE FROM employee WHERE emp_id=%s",
     "remove_user" : "DELETE FROM users WHERE emp_id=%s",
     "remove_employee" : "DELETE FROM employee WHERE emp_id=%s",
     "update_employee" : "UPDATE employee SET emp_name=%s, group_id=%s WHERE emp_id=%s",
     "update_access_level" : "UPDATE users SET access_lvl=%s WHERE emp_id=%s "
 }
+
+
+def get_current_data(db):
+
+    employees, passwords = get_employee_list(db)
+    users = get_user_list(db)
+    groups = get_group_list(db)
+
+    return (groups, employees, users, passwords)
+
 
 def get_employee_list(db):
     the_list = []
@@ -105,6 +118,12 @@ def get_employee(db, emp_id):
             return emp
     return "Employee not found"
 
+def get_user(db, emp_id):
+    user_list = get_user_list(db)
+    for user in user_list:
+        if user['employee_id'] == int(emp_id):
+            return user
+    return "User not found" 
 
 def remove_user(db, emp_id):
     cur = db.cursor()
@@ -117,6 +136,34 @@ def remove_user(db, emp_id):
         cur.close()
     return "User deleted"
 
+def remove_employee_by_id(db, emp_id):
+    if not check_employee(db, emp_id):
+        return "No such employee"
+    emp = get_employee(db, emp_id)
+    if emp['username']:
+        remove_user_by_id(db, emp_id)
+    cur = db.cursor()
+    try:
+        cur.execute(queries["remove_employee_by_id"] % emp_id)
+        db.commit()
+    except mysql.connector.Error as err:        
+        return ("Error {}".format(err.msg))
+    finally:
+        cur.close()
+
+    return "Employee successfully deleted"
+
+def remove_user_by_id(db, emp_id):
+    cur = db.cursor()
+    try:
+        cur.execute(queries["remove_user_by_id"] % emp_id)
+        db.commit()
+    except mysql.connector.Error as err:
+        print("Error {}".format(err.msg))
+        return ("Error {}".format(err.msg))
+    finally:
+        cur.close()
+    return "User successfully deleted!"
 
 def remove_employee(db, emp_id):
     if not check_employee(db, emp_id):
@@ -150,6 +197,22 @@ def update_employee(db, emp_id, name, group_id):
     return "Employee ", name, " updated"
 
 
+def update_employee_name(db, emp_id, name):
+    if not check_employee(db,emp_id):
+        return "No employee with that name!"
+    cur = db.cursor()
+    try:
+        cur.execute(queries['update_employee'], (name, emp_id))
+        db.commit()
+    except mysql.connector.Error as err:
+        return "Error {}".format(err.msg)
+    finally:
+        
+        cur.close()
+    return "Employee ", name, " updated!"
+
+
+
 def update_access(db, emp_id, access_lvl):
     #change access lvl
     cur = db.cursor()
@@ -161,3 +224,11 @@ def update_access(db, emp_id, access_lvl):
     finally:
         cur.close()
     return "User access level updated"
+
+def get_employees_by_group(db, group_id):
+    resp = []
+    employees, _ = get_employee_list(db)
+    for emp in employees:
+        if emp['employee_group_id'] == int(group_id):
+            resp.append(emp)
+    return resp

@@ -5,12 +5,10 @@ from functools import wraps
 import mysql.connector
 import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
-#from util import *
-from testutil import *
+from util import *
 
 app = Flask(__name__)
 
-# change for the real keys on deployment
 app.secret_key = open('jwtRS256.key').read()  
 app.public_key = open('jwtRS256.key.pub').read()
 app.config['DB_USER'] = 'root'
@@ -18,14 +16,6 @@ app.config['DB_PWD'] = 'root'
 app.config['DB'] = 'employee'
 app.config['DB_HOST'] = 'localhost'
 
-<<<<<<< HEAD
-=======
-
-employees = []
-users = []
-groups = []
-passwords = {}
->>>>>>> c2b7d5c35ca16cc7c99d958ede98e5a45cdd768e
 
 def get_db():
     if not hasattr(g, "_database"):
@@ -44,22 +34,6 @@ def teardown_db(error):
         db.close()
 
 
-<<<<<<< HEAD
-=======
-# populates local structures with initial data from the database
-def get_current_data(db):
-   # employees.clear()
-    #users.clear()
-    #groups.clear()
-    #passwords.clear()
-
-    employees, passwords = get_employee_list(get_db())
-    users = get_user_list(get_db())
-    groups = get_group_list(get_db())
-
-    return (groups, employees, users, passwords)
-
->>>>>>> c2b7d5c35ca16cc7c99d958ede98e5a45cdd768e
 # AUTHENTICATION #
 
 # user logged in
@@ -209,7 +183,7 @@ def edit_employee(emp_id):
         name = got['name']
     else:
         name = request.forms['name']
-    resp = update_employee(get_db(), emp_id, name)
+    resp = update_employee_name(get_db(), emp_id, name)
     return jsonify(resp)
 
 @app.route('/employees/<emp_id>', methods=['DELETE'])
@@ -262,7 +236,7 @@ def get_one_user(emp_id):
 @verify_admin_token
 def edit_user(emp_id):
     got = request.get_json()
-    resp = update_user(get_db(), emp_id, got['auth'])
+    resp = update_access(get_db(), emp_id, got['auth'])
     return jsonify(resp)
 
 @app.route('/users/<emp_id>', methods=['DELETE'])
