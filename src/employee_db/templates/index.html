@@ -2,44 +2,10 @@
 
 {% block content %}
 
-{% if not session['token'] %}
-<div class="container" id="test">
-    <h2 class="text-warning">List of all the registered users for testing purposes only</h2>
-    <table class="table table-bordered">
-            <thead class="thead-dark"><th>Username</th><th>Access level</th></thead>
-    {% for user in users %}
-        <tr {% if user.access_level==1 %} class="bg-info" {% elif user.access_level==0 %} class="bg-success" {% endif %}><td>{{ user.username }}</td></td>
-            <td >{% if user.access_level<2 %} admin {% else %} user {% endif %}</td></tr>
-    {% endfor %}
-    </table>
-</div>
-{% endif %}
-
-
-<div class="container col-sm-10" id="login">
-        {% if not session['token'] %}
-    <h2>Log in</h2>
-    <form action="{{ url_for('login') }}" method="post">
-        <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" class="form-control" id="username" placeholder="Enter username" name="username">
-        </div>
-        <div class="form-group">
-            <label for="pwd">Password:</label>
-            <input type="password" class="form-control" id="password" placeholder="Enter password" name="password">
-        </div>
-        <button type="submit" class="btn btn-primary btn-md" name="login">Log in</button>
-    </form>
-
-    {% else %}
-    <form action="{{ url_for('logout') }}" method="post">
+<form action="{{ url_for('logout') }}" method="post">
         <button type="submit" class="btn btn-info btn-md" name="logout">Logout</button>
+        USER AUTHORITY: {{ user.access_level }}
     </form>
-{% endif %}
-
-</div>
-
-USER AUTHORITY: {{ user.access_level }}
 
 {% if user.group_id<2 %}
 {% include "hr.html" %}

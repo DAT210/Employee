@@ -79,10 +79,15 @@ def verify_admin_token(f):
 @app.route("/")
 def index():
 
-    groups, employees, users, passwords = get_current_data(get_db())
-    resp = make_response(render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": 666, "access_level": 666}))
-    resp.set_cookie('token', '', max_age=-1)
-    return resp
+    groups, employees, users, _ = get_current_data(get_db())
+    if session.get('token') and request.cookies.get('token'):
+        user = session.get('user')
+        return render_template("index.html", groups=groups, employees=employees, users=users, user=user)
+    return render_template('login.html', users=users)
+
+    #resp = make_response(render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": 666, "access_level": 666}))
+    #resp.set_cookie('token', '', max_age=-1)
+    #return resp
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -90,6 +95,7 @@ def login():
     groups, employees, users, passwords = get_current_data(get_db())
     if request.method == 'POST':
         session.pop('token', None)
+        session.pop('user', None)
         
         if request.form['username'] in passwords.keys(): #valid user
             if check_password_hash(passwords[request.form['username']], request.form['password']): # valid password
@@ -108,6 +114,7 @@ def login():
                             }
                         token = jwt.encode(payload, app.secret_key, algorithm='RS256').decode('utf-8')
                         session['token'] = token
+                        session['user'] = {"group_id": group, "access_level": auth}
                 resp = make_response(render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": group, "access_level": auth}))
                 resp.set_cookie('token', token)
                 return resp
@@ -125,14 +132,16 @@ def login():
                 payload = jwt.decode(token, app.secret_key, algorithm='RS256').decode('utf-8')
             except:
                 return jsonify("No token provided!")
-        print("Payload: ", payload)
         return render_template("index.html", groups=groups, employees=employees, users=users, user={"group_id": payload['group'], "access_level": payload['auth']})
 
 
 @app.route("/logout", methods=['POST'])
 def logout():
     session.pop('token', None)
-    return redirect(url_for('index'))
+    session.pop('user', None)
+    resp = make_response(redirect(url_for('index')))
+    resp.set_cookie('token', '', max_age=0)
+    return resp
 
 
 @app.route('/delete_employee_form/<emp_id>', methods=['POST'])
@@ -149,13 +158,12 @@ def delete_employee_form(emp_id):
 @app.route('/employees', methods=['GET'])
 @verify_token
 def get_employees():
-    employees, pwds = get_employee_list(get_db())
+    employees, _ = get_employee_list(get_db())
     return jsonify({"Employees" : employees })
 
 @app.route('/employees', methods=['POST'])
 @verify_admin_token
 def add_an_employee():
-    # auth = 0 or group = 1, auth = 1 (HR)
     got = request.get_json()
     if got : #got functional json
         resp = add_employee(get_db(), got['name'], got['group'])
@@ -172,7 +180,6 @@ def get_one_employee(emp_id):
 @app.route('/employees/<emp_id>', methods=['PUT'])
 @verify_admin_token
 def edit_employee(emp_id):
-    # auth = 0 or group=1 auth=1
     got = request.get_json()
     if got:
         name = got['name']
@@ -184,7 +191,6 @@ def edit_employee(emp_id):
 @app.route('/employees/<emp_id>', methods=['DELETE'])
 @verify_admin_token
 def delete_employee(emp_id):
-    # remove existing user, requires auth lvl 0
     resp = remove_employee_by_id(get_db(), emp_id)
     return jsonify(resp)
 
@@ -193,7 +199,6 @@ def delete_employee(emp_id):
 @app.route('/users', methods=['GET'])
 @verify_admin_token
 def get_users():
-    # token required, all auth lvls
     users = get_user_list(get_db())
     return jsonify({"Users" : users})
 
@@ -233,7 +238,6 @@ def get_one_user(emp_id):
 @verify_admin_token
 def edit_user(emp_id):
     got = request.get_json()
-    print("Got: ", got)
     resp = update_user(get_db(), emp_id, got['auth'])
     return jsonify(resp)
 
@@ -250,6 +254,12 @@ def delete_user(emp_id):
 def get_groups():
     groups = get_group_list(get_db())
     return jsonify({"Employee groups" : groups})
+
+@app.route('/group_employees/<group_id>', methods=['GET'])
+@verify_token
+def get_by_groups(group_id):
+    resp = get_employees_by_group(get_db(), group_id)
+    return jsonify(resp)
 
 
 @app.route("/addEmployee", methods=["POST"])

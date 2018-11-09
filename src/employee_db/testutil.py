@@ -131,6 +131,14 @@ def remove_employee_by_id(db, emp_id):
 
     return "Employee successfully deleted"
 
+def get_employees_by_group(db, group_id):
+    resp = []
+    employees, _ = get_employee_list(db)
+    for emp in employees:
+        if emp['employee_group_id'] == int(group_id):
+            resp.append(emp)
+    return resp
+
 
 
 ## Users ##
@@ -193,6 +201,7 @@ def update_employee(db, emp_id, name):
         
         cur.close()
     return "Employee ", name, " updated!"
+
 
 # END OF TEMP
 
