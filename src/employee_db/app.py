@@ -18,6 +18,14 @@ app.config['DB_PWD'] = 'root'
 app.config['DB'] = 'employee'
 app.config['DB_HOST'] = 'localhost'
 
+<<<<<<< HEAD
+=======
+
+employees = []
+users = []
+groups = []
+passwords = {}
+>>>>>>> c2b7d5c35ca16cc7c99d958ede98e5a45cdd768e
 
 def get_db():
     if not hasattr(g, "_database"):
@@ -36,6 +44,22 @@ def teardown_db(error):
         db.close()
 
 
+<<<<<<< HEAD
+=======
+# populates local structures with initial data from the database
+def get_current_data(db):
+   # employees.clear()
+    #users.clear()
+    #groups.clear()
+    #passwords.clear()
+
+    employees, passwords = get_employee_list(get_db())
+    users = get_user_list(get_db())
+    groups = get_group_list(get_db())
+
+    return (groups, employees, users, passwords)
+
+>>>>>>> c2b7d5c35ca16cc7c99d958ede98e5a45cdd768e
 # AUTHENTICATION #
 
 # user logged in
