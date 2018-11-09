@@ -1,37 +1,85 @@
-
+<div class="container" id="groups">
 <h2>Employee groups</h2>
 <table class="table table-bordered">
     <thead class="thead-dark"><th>Group ID</th><th>Description</th></thead>
-{% for group in groups %}
-    <tr><td>{{ group.group_id }}</td><td>{{ group.group_name }}</td></tr>
+{% for key, value in groups.items() %}
+    <tr><td>{{ key }}</td><td>{{ value }}</td></tr>
 {% endfor %}
 </table>
+</div>
 
-
-{% if user.access_level=="1" %}
+{% if user.access_level<2 %}
 <div class="container" id="add_employees">
     <h2>Add a new employee</h2>
-    <form action="#">
+    <form action="{{ url_for('.add_an_employee') }}" method="POST" enctype='application/json'>
         <div class="form-group">
-            <label for="emp_name">Employee name:</label>
-            <input type="text" class="form-control" id="emp_name" placeholder="Enter name" name="emp_name">
+            <label for="name">Employee name:</label>
+            <input type="text" class="form-control" id="name" placeholder="Enter name" name="name">
         </div>
         <div class="form-group">
-            <label for="emp_group">Employee group:</label>
-            <input type="text" class="form-control" id="emp_group" placeholder="Enter employee group number" name="emp_group">
+            <label for="group">Employee group:</label>
+            <input type="text" class="form-control" id="group" placeholder="Enter employee group number" name="group">
         </div>
-        <button type="button" class="btn btn-primary btn-md" name="add_employee">Add</button>
+        <button type="submit" class="btn btn-primary btn-md" name="add_employee">Add</button>
     </form>
 </div>
 {% endif %}
 
+{% if user.access_level == 0 %}
+<div class="container" id="add_user">
+    <h2>Add a new user</h2>
+    <form action="{{ url_for('.create_user') }}" method="POST">
+        <div class="form-group">
+            <label for="emp_id">Employee ID:</label>
+            <select class="form-control" id="emp_id" name="emp_id">
+                {% for emp in employees %}
+                <option>{{ emp.employee_id }}</option>
+                {% endfor %}
+            </select>    
+        </div>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" class="form-control" id="username" placeholder="Enter username" name="username">
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="text" class="form-control" id="password" placeholder="Enter password" name="password">
+        </div>
+        <div class="form-group">
+            <label for="auth">Access level:</label>
+            <select class="form-control" id="auth" name="auth">
+
+                <option>0</option>
+                <option>1</option>
+                <option>2</option>
+            </select>
+        </div>
+        <div class="form-group">
+            
+        </div>
+        <button type="submit" class="btn btn-primary btn-md" name="add_employee">Add</button>
+    </form>
+
+
+</div>
+
+{% endif %}
 
 
 <h2>Employees</h2>
-<table class="table table-bordered">
-    <thead class="thead-dark"><th>Employee ID</th><th>Employee name</th><th>Employee group</th><th>Username</th>{% if user.access_level=="1" %}<th></th>{% endif %}</thead>
+<table class="table table-bordered" id="employee_list">
+    <thead class="thead-dark"><th>Employee ID</th><th>Employee name</th><th>Employee group</th><th>Username</th>{% if user.access_level<2 %}<th>Edit</th><th>Remove</th>{% endif %}</thead>
     {% for employee in employees %}
-    <tr {% if employee.access_level=="1" %} class="bg-info" {% endif %}><td>{{ employee.employee_id }}</td><td>{{ employee.name }}</td><td>{{ employee.employee_group }}</td><td>{{ employee.username }}</td>{% if user.access_level=="1" %}<td><form action="#" class="form form-inline"><button type="button" class="btn btn-danger btn-md" name="remove">Remove</button><button type="submit" class="btn btn-md btn-success">Edit</button></form></td>{% endif %}</tr>
+    <tr {% if not employee.access_level %} class="bg-secondary" {% elif employee.access_level<2 %} class="bg-info" {% endif %}><td>{{ employee.employee_id }}</td><td>{{ employee.name }}</td><td>{{ employee.employee_group_id }}</td><td>{{ employee.username }}</td>{% if user.access_level<2 %}<td><form action="{{ url_for('.edit_employee', emp_id = employee.employee_id) }}" class="form form-inline" method="PUT">
+            <input type="text" class="form-control" id="name" placeholder="Enter new name" name="name"><button type="submit" class="btn btn-md btn-success">Edit</button></form></td><td><form action="{{ url_for('.delete_employee_form', emp_id = employee.employee_id) }}" class="form form-inline" method="POST"><button type="submit" class="btn btn-danger btn-md" name="remove">Remove</button></form></td>{% endif %}</tr>
 
     {% endfor %}
 </table>
+
+{% if user.group == 13 %}
+<h2>Employees with ajax</h2>
+<table class="table table-bordered" id="employee_list_ajax">
+    <thead class="thead-dark"><th>Employee ID</th><th>Employee name</th><th>Employee group</th><th>Username</th></thead>
+</table>
+
+{% endif %}

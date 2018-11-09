@@ -54,7 +54,7 @@ CREATE TABLE `employee` (
   PRIMARY KEY (`emp_id`),
   KEY `group_id` (`group_id`),
   CONSTRAINT `employee_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `employee_group` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -63,7 +63,7 @@ CREATE TABLE `employee` (
 
 LOCK TABLES `employee` WRITE;
 /*!40000 ALTER TABLE `employee` DISABLE KEYS */;
-INSERT INTO `employee` VALUES (1,'HR Admin',1),(2,'HR User',1),(3,'Food Prep Admin',2),(4,'Food Prep User',2),(5,'Delivery User',3),(6,'Serving User',4),(7,'Admin',0);
+INSERT INTO `employee` VALUES (1,'HR Admin',1),(2,'HR User',1),(3,'Food Prep Admin',2),(4,'Food Prep User',2),(5,'Delivery User',3),(6,'Serving User',4),(7,'Admin',0),(11,'Test employee',2);
 /*!40000 ALTER TABLE `employee` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -146,7 +146,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (7,'admin','admin',0),(5,'delivery_user','pass',2),(1,'hr_admin','pass',1),(2,'hr_user','pass',2),(3,'menu_admin','pass',1),(4,'menu_user','pass',2),(6,'serving_user','pass',2);
+INSERT INTO `users` VALUES (7,'admin','sha256$Jt5ej7l4Z7$faf0f5b6646ff6402cddd2b3ed5a8ee6ce7d3c210e7ca7ded99a57816ee83ddc',0),(5,'delivery_user','sha256$dUVV4JTD3q$1b25741c2c8067c661f5cc534a5d2a91e6b77dee089d7d9c86041f7501088010',2),(4,'food_prep_user','sha256$cdLWlkviTZ$28baa75ec24573e3f642d5e266aae2791160503d0281f2774dd687a57c1c330f',2),(1,'hr_admin','sha256$j8UuPdWe0g$66c7fc8eb7a8d7e0a1278b10c9d712c0677278b45ffc0e37e7708f0883d8b131',1),(2,'hr_user','sha256$pzTpJmC7iz$c56819f75885297a994786cf9b862ad3948bf7280dfeb3df6c6faac0c4c81321',2),(3,'menu_admin','sha256$qFM4wIEGXl$f9c45dac701ecaba670c87d08573b9bd549a5e06a5787d93a193597ebae4046b',1),(6,'serving_user','sha256$eJK6XFT1TG$2187ea4074718506897eaeae56eb09b6bdb89b741874a6e373dd3c69c47715bc',2);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -159,4 +159,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-01 19:31:43
+-- Dump completed on 2018-11-04 15:36:26

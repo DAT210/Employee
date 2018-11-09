@@ -2,55 +2,25 @@
 
 {% block content %}
 
-{% if not session['user'] %}
-<div class="container" id="test">
-    <h2 class="text-warning">List of all the registered users for testing purposes only</h2>
-    <table class="table table-bordered">
-            <thead class="thead-dark"><th>Username</th><th>Password</th><th>Access level</th></thead>
-    {% for user in users %}
-        <tr {% if user.access_level=="1" %} class="bg-info" {% endif %}><td>{{ user.username }}</td><td>{{ user.password }}</td>
-            <td >{% if user.access_level=="1" %} A noble admin {% else %} A lowly peasant {% endif %}</td></tr>
-    {% endfor %}
-    </table>
-</div>
-{% endif %}
-
-
-<div class="container" id="login">
-        {% if not session['user'] %}
-    <h2>Log in</h2>
-    <form action="{{ url_for('login') }}" method="post">
-        <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" class="form-control" id="username" placeholder="Enter username" name="username">
-        </div>
-        <div class="form-group">
-            <label for="pwd">Password:</label>
-            <input type="password" class="form-control" id="password" placeholder="Enter password" name="password">
-        </div>
-        <button type="submit" class="btn btn-primary btn-md" name="login">Log in</button>
-    </form>
-
-    {% else %}
-    <form action="{{ url_for('logout') }}" method="post">
+<form action="{{ url_for('logout') }}" method="post">
         <button type="submit" class="btn btn-info btn-md" name="logout">Logout</button>
+        USER AUTHORITY: {{ user.access_level }}
     </form>
+
+{% if user.group_id<2 %}
+{% include "hr.html" %}
 {% endif %}
 
-</div>
-
-{% if user.group_id=="1" %}
-{% include "hr.html" %}
-
-{% elif user.group_id=="2" %}
+{% if user.group_id==2 or user.access_level==0 %}
 {% include "foodprep.html" %}
+{% endif %}
 
-{% elif user.group_id=="3" %}
+{% if user.group_id==3 or user.access_level==0 %}
 {% include "delivery.html" %}
+{% endif %}
 
-{% elif user.group_id=="4" %}
+{% if user.group_id==4 or user.access_level==0 %}
 {% include "serving.html" %}
-
 {% endif %}
 
 <div class="footer"> ... </div>
