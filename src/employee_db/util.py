@@ -229,6 +229,6 @@ def get_employees_by_group(db, group_id):
     resp = []
     employees, _ = get_employee_list(db)
     for emp in employees:
-        if emp['employee_group_id'] == int(group_id):
+        if int(emp['employee_group_id']) == int(group_id):
             resp.append(emp)
     return resp

@@ -253,7 +253,7 @@ def get_groups():
     groups = get_group_list(get_db())
     return jsonify({"Employee groups" : groups})
 
-@app.route('/group_employees/<group_id>', methods=['GET'])
+@app.route('/group-employees/<group_id>', methods=['GET'])
 @verify_token
 def get_by_groups(group_id):
     resp = get_employees_by_group(get_db(), group_id)
