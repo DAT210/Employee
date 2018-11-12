@@ -1,17 +1,23 @@
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-4" id="group_list">
-            <div class="list-group">
-                    <button type="button" class="list-group-item list-group-item-action" id="0">Admin</button>
-                    <button type="button" class="list-group-item list-group-item-action" id="1">HR</button>
-                    <button type="button" class="list-group-item list-group-item-action" id="2">Food Preparation</button>                        
-                    <button type="button" class="list-group-item list-group-item-action" id="3">Delivery</button>
-                    <button type="button" class="list-group-item list-group-item-action" id="4">Serving</button>
-            </div>
+        <div class="col-md-6" id="group_list">
+            <ul class="list-group">
+                    <li class="list-group-item list-group-item-dark" id="h0">Admin</li>
+                    <li class="list-group item"><ul class="list-group list-group-flush" id="group0"></ul></li>
+                    <li class="list-group-item list-group-item-dark" id="h1">HR</li>
+                    <li class="list-group item"><ul class="list-group list-group-flush" id="group1"></ul></li>
+                    <li class="list-group-item list-group-item-dark" id="h2">Food Preparation</li>
+                    <li class="list-group item"><ul class="list-group list-group-flush" id="group2"></ul></li>
+                    <li class="list-group-item list-group-item-dark" id="h3">Delivery</li>
+                    <li class="list-group item"><ul class="list-group list-group-flush" id="group3"></ul></li>
+                    <li class="list-group-item list-group-item-dark" id="h4">Serving</li>
+                    <li class="list-group item"><ul class="list-group list-group-flush" id="group4"></ul></li>
+
+            </ul>
         
         </div>
         <div class="col-md-auto"> </div>
-        <div class="col-md-2 offset-md-2">
+        <div class="col-md-2 offset-md-1">
             <h3>New employee:</h3>
             <form action="{{ url_for('.add_an_employee') }}" method="POST" enctype='application/json'>
                 <div class="form-group">
@@ -25,21 +31,33 @@
                             <option>{{ key  }} : {{ value }}</option>
                             {% endfor %}
                         </select>  
-                    
-                   <!-- <input type="text" class="form-control" id="group" placeholder="Enter employee group number" name="group"> -->
                 </div>
-                    <button type="submit" class="btn btn-primary btn-md" name="add_employee">Add</button>
+                    <button type="button" class="btn btn-primary btn-md" id="add_employee" name="add_employee">Add</button>
             </form>
+  <!--    <h3>Edit employee: </h3>
+            <form action="#">
+                    <div class="form-group">
+                            <label for="edit_id">Employee ID:</label>
+                            <select class="form-control" id="edit_id" name="edit_id">
+                                {% for emp in employees %}
+                                <option>{{ emp.employee_id }}</option>
+                                {% endfor %}
+                            </select>    
+                        </div>
+                        <div class="form-group">
+                                <label for="edit_name">Employee name:</label>
+                                <input type="text" class="form-control" id="edit_name" placeholder="Enter name" name="edit_name">
+                            </div>
 
-            
-            
+            </form>
+            -->
             
 
 
         </div>
         <div class="col-md-2"> 
             <h3>New user:</h3>
-                <form action="{{ url_for('.create_user') }}" method="POST">
+                <form action="{{ url_for('.create_user') }}" method="POST" enctype='application/json'>
                         <div class="form-group">
                             <label for="emp_id">Employee ID:</label>
                             <select class="form-control" id="emp_id" name="emp_id">
@@ -66,7 +84,7 @@
                         <div class="form-group">
                             
                         </div>
-                        <button type="submit" class="btn btn-primary btn-md" name="add_employee">Add</button>
+                        <button type="button" class="btn btn-primary btn-md" name="add_user" id="add_user">Add</button>
                     </form>
         </div>
     </div>

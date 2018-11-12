@@ -182,7 +182,7 @@ def edit_employee(emp_id):
     if got:
         name = got['name']
     else:
-        name = request.forms['name']
+        name = request.form['name']
     resp = update_employee_name(get_db(), emp_id, name)
     return jsonify(resp)
 
