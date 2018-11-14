@@ -9,12 +9,13 @@ from util import *
 
 app = Flask(__name__)
 
-app.secret_key = open('jwtRS256.key').read()  
+app.secret_key = open('jwtRS256.key').read()
 app.public_key = open('jwtRS256.key.pub').read()
 app.config['DB_USER'] = 'root'
 app.config['DB_PWD'] = 'root'
 app.config['DB'] = 'employee'
-app.config['DB_HOST'] = 'localhost'
+app.config['DB_HOST'] = '192.168.99.100'
+app.config['DB_PORT'] = '3306'
 
 
 def get_db():
@@ -23,7 +24,8 @@ def get_db():
             user = app.config['DB_USER'],
             host = app.config['DB_HOST'],
             password = app.config['DB_PWD'],
-            database = app.config['DB']
+            database = app.config['DB'],
+            port = app.config['DB_PORT']
         )
     return g._database
 
@@ -40,9 +42,9 @@ def teardown_db(error):
 def verify_token(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        
+
         token = request.cookies.get('token')
-        
+
         if not token:
             return jsonify({'message': 'No token provided!'}), 401
         try:
@@ -62,7 +64,7 @@ def verify_admin_token(f):
             return jsonify({'message': 'No token provided!'}), 401
         try:
             payload = jwt.decode(token, app.public_key, algorithms=['RS256'])
-            
+
         except:
             return jsonify({'message': 'Invalid token!'}), 403
 
@@ -71,7 +73,7 @@ def verify_admin_token(f):
 
         return f(*args, **kwargs)
     return decorated
-        
+
 # front end routes #
 
 @app.route("/")
@@ -94,7 +96,7 @@ def login():
     if request.method == 'POST':
         session.pop('token', None)
         session.pop('user', None)
-        
+
         if request.form['username'] in passwords.keys(): #valid user
             if check_password_hash(passwords[request.form['username']], request.form['password']): # valid password
                 group = auth = ''
@@ -104,10 +106,10 @@ def login():
                         auth = employee['access_level']
                         # set claims
                         payload = {
-                            'role' : "employee" , 
-                            'user': request.form['username'], 
-                            'group' : group , 
-                            'auth' : auth,  
+                            'role' : "employee" ,
+                            'user': request.form['username'],
+                            'group' : group ,
+                            'auth' : auth,
                             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
                             }
                         token = jwt.encode(payload, app.secret_key, algorithm='RS256').decode('utf-8')
@@ -203,7 +205,7 @@ def get_users():
 @app.route('/users', methods=['POST'])
 @verify_admin_token
 def create_user():
-    got = request.get_json()    
+    got = request.get_json()
     if got:
         id = got['ID']
         pwd = got['password']
@@ -215,7 +217,7 @@ def create_user():
         username = request.form['username']
         auth = request.form['auth']
 
-    
+
     if not check_employee(get_db(), id):
         return jsonify("No employee with ID " + id)
 
@@ -290,4 +292,4 @@ def update(emp_id):
     pass
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
