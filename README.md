@@ -3,7 +3,7 @@
 # Employee &middot; [![Build Status](https://img.shields.io/travis/npm/npm/latest.svg?style=flat-square)](https://travis-ci.org/npm/npm) [![npm](https://img.shields.io/npm/v/npm.svg?style=flat-square)](https://www.npmjs.com/package/npm) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/your/your-project/blob/master/LICENSE)
 > Additional information or tag line
 
-A brief description of your project, what it is used for.
+Employee is a service for logging in employees based on access_level. Admins can add, edit and delete employees.
 
 ## Installing / Getting started
 
@@ -19,24 +19,33 @@ Here you should say what actually happens when you execute the code above.
 ## Developing
 
 ### Built With
-List main libraries, frameworks used including versions (React, Angular etc...)
+  * Python 3.6
+  * MySQL 8.0
+  * Flask 0.12
+  * PyJWT 1.6.4
 
 ### Prerequisites
-What is needed to set up the dev environment. For instance, global dependencies or any other tools. include download links.
-
+  * [Docker](https://www.docker.com/)
+  * [GIT](https://git-scm.com/downloads)
 
 ### Setting up Dev
-
-Here's a brief intro about what a developer must do in order to start developing
-the project further:
-
 ```shell
-git clone https://github.com/your/your-project.git
-cd your-project/
-packagemanager install
+git clone https://github.com/DAT210/Employee.git
+cd Employee/src/employee_db
+docker-compose up --build
 ```
 
-And state what happens step-by-step. If there is any virtual environment, local server or database feeder needed, explain here.
+The container should be visible at:
+http://192.168.99.100:5000/   (Docker-toolbox)
+http://127.0.0.1:5000/ ("Normal" Docker)
+
+What happens when you execute these commands:
+1. Clones the project to your computer
+2. Change directory into the project you just cloned
+3. Docker installs requirements
+4. Docker sets up the database
+5. Docker runs the flask app
+
 
 ### Building
 
@@ -92,9 +101,36 @@ If the api is external, link to api documentation. If not describe your api incl
 
 
 ## Database
+[MySQL 8.0](https://dev.mysql.com/downloads/workbench/)
 
-Explaining what database (and version) has been used. Provide download links.
-Documents your database design and schemas, relations etc...
+The database has 5 tables:
+access_level:
+* access_lvl INT PRIMARY KEY
+* access_code VARCHAR
+
+employee_group:
+* group_id INT PRIMARY KEY
+* group_name VARCHAR
+
+employee:
+* emp_ip INT PRIMARY KEY
+* emp_name VARCHAR
+* group_id INT FOREIGN KEY
+
+users:
+* emp_ip INT FOREIGN KEY
+* username VARCHAR PRIMARY KEY
+* pass VARCHAR
+* access_lvl INT FOREIGN KEY
+
+timesheet:
+* emp_id INT FOREIGN KEY
+* work_date DATE PRIMARY KEY
+* work_start TIME
+* work_finish TIME
+* clock_in TIME
+* clock_out TIME
+
 
 ## Licensing
 
