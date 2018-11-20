@@ -1,9 +1,7 @@
 ![Logo of the project](./src/employee_db/static/images/logo.png)
 
 # Employee &middot; [![Build Status](https://img.shields.io/travis/npm/npm/latest.svg?style=flat-square)](https://travis-ci.org/npm/npm) [![npm](https://img.shields.io/npm/v/npm.svg?style=flat-square)](https://www.npmjs.com/package/npm) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/your/your-project/blob/master/LICENSE)
-> Additional information or tag line
-
-Employee is a service for logging in employees based on access_level. Admins can add, edit and delete employees.
+> Employee is a service for logging in employees based on access_level. Admins can add, edit and delete employees.
 
 ## Installing / Getting started
 
@@ -36,7 +34,9 @@ docker-compose up --build
 ```
 
 The container should be visible at:
+
 http://192.168.99.100:5000/   (Docker-toolbox)
+
 http://127.0.0.1:5000/ ("Normal" Docker)
 
 What happens when you execute these commands:
@@ -104,6 +104,7 @@ If the api is external, link to api documentation. If not describe your api incl
 [MySQL 8.0](https://dev.mysql.com/downloads/workbench/)
 
 The database has 5 tables:
+
 access_level:
 * access_lvl INT PRIMARY KEY
 * access_code VARCHAR
