@@ -234,8 +234,8 @@ If a user associated with the employee exists in the database, it will be delete
 Protected: requires authority level 0 or 1.  
 Returns 204 on success.  
 Parameters: {employeeID}: integer  
+&nbsp;
 
-<br>
 See [API Documentation](https://documenter.getpostman.com/view/5782719/RzZDhws9) for more request and response examples.
 
 ## Database
