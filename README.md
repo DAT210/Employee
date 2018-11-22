@@ -93,7 +93,7 @@ PARAMETERS:
 Username: hr_admin  
 Password: pass*
 
-#### POST
+### POST
 
 ***http://<i></i>127.0.0.1:500/login***  
 Log in with 'admin' username 'admin' password to get full access.   
@@ -140,7 +140,7 @@ Required JSON fields: { "ID" : employee ID int, "username" : desired username st
 Will return error message if employee with given ID does not exist, if user for that employee is already created or if username is already taken.
 
 
-#### GET
+### GET
 ***http://<i></i>127.0.0.1:5000/groups***  
 Will return the full list of all existing employee groups
 
@@ -185,7 +185,7 @@ Returns 500 status code if non-existing employee requested.
 Protected, requires authority level 0 or 1.
 
 
-#### PUT
+### PUT
 ***http://<i></i>127.0.0.1:5000/employees/{employeeID}***   
 PUT to employees/{employeeID} will update the name of an employee with provided ID if they exist, will return an error message if not.   
 Required JSON fields: { "name" : new name string }  
@@ -203,8 +203,8 @@ curl --request PUT \
 }'
 ```
 
-<br>
-***http://<i></i>127.0.0.1:5000/users/{employeeID}***   
+
+***http://<i></i>127.0.0.1:5000/users/{employeeID}***  
 PUT to /users/{employeeID} will change authority level for user associated with the provided ID.   
 If user or employee with that ID does not exist, will return status code 400.   
 Will return status code 204 on success.  
@@ -213,7 +213,7 @@ Parameters: employeeID - integer
 Protected: requires authority level 0 or 1
 
 
-#### DELETE
+### DELETE
 ***http://<i></i>127.0.0.1:5000/users/{employeeID}***   
 DELETE to users/{employeeID} will delete the user associated with the employee with provided ID.  
 Returns status code 204 on success.  
@@ -228,7 +228,6 @@ curl --request DELETE \
   --header 'Content-Type: application/json'
 ```
 
-<br>
 ***http://<i></i>127.0.0.1:5000/employees/{employeeID}***  
 DELETE to employees/{employeeID} will delete the employee with provided ID.   
 If a user associated with the employee exists in the database, it will be deleted first.  
