@@ -47,20 +47,6 @@ What happens when you execute these commands:
 5. Docker runs the flask app
 
 
-### Building
-
-If your project needs some additional steps for the developer to build the
-project after some code changes, state them here. for example:
-
-```shell
-./configure
-make
-make install
-```
-
-Here again you should state what actually happens when the code above gets
-executed.
-
 ### Deploying / Publishing
 give instructions on how to build and release a new version
 In case there's some step you have to take that publishes this project to a
@@ -97,8 +83,177 @@ Explain your code style and show how to check it.
 
 ## Api Reference
 
-If the api is external, link to api documentation. If not describe your api including authentication methods as well as explaining all the endpoints with their required parameters.
+[API Documentation](https://documenter.getpostman.com/view/5782719/RzZDhws9)
 
+PARAMETERS:  
+{employeeID} : ID of the employee, used for retrieving, updating, and deleting employee and user information. Type: integer  
+{groupID} : ID of the employee group, used for retrieving a list of employees belonging to a certain group. Type: integer   
+
+*Login as HR admin to get access to full employee API functionality.  
+Username: hr_admin  
+Password: pass*
+
+#### POST
+
+***http://<i></i>127.0.0.1:500/login***
+
+Log in with 'admin' username 'admin' password to get full access.   
+Log in with 'pass' password to test user groups and authority levels.   
+A browser cookie with a 'token' field will be added, token payload contains all the information on user, including name, ID, employee group and authority level. The token will expire in 30 minutes. Use the public key provided to decode the token.
+
+Example request:
+```shell
+*http://127.0.0.1:5000/login*
+curl --request POST \
+  --url http://127.0.0.1:5000/login \
+  --header 'content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' \
+  --form username=admin \
+  --form password=admin123
+```
+<br>
+***http://<i></i>127.0.0.1:5000/logout***
+
+Use to log out. Pops the session, replaces the token cookie with the one that will contain no viable token and expire instantly.
+
+<br>
+***http://<i></i>127.0.0.1:5000/employees***
+
+POST request to /employees with json formatted request.   
+Required fields: { "name" : employee name string, "group" : employee group int}   
+Required authority level: 0 or 1
+
+Example request:
+```shell
+*http://127.0.0.1:5000/employees*
+curl --request POST \
+  --url http://127.0.0.1:5000/employees \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"name" : "Test API Employee",
+	"group" : 22
+
+}'
+```
+
+<br>
+***http://<i></i>127.0.0.1:5000/users***
+
+POST to /users will create a new user if an employee with provided ID exists in the database.   
+Required JSON fields: { "ID" : employee ID int, "username" : desired username string, "password" : desired password string, "auth" : authority level int }   
+Will return error message if employee with given ID does not exist, if user for that employee is already created or if username is already taken.
+
+
+#### GET
+***http://<i></i>127.0.0.1:5000/groups***
+
+Will return the full list of all existing employee groups
+
+<br>
+***http://<i></i>127.0.0.1:5000/group-employees/{groupID}***
+
+To get the list of all employees belonging to provided group number.   
+Parameters: groupID - integer
+
+Example request:
+```shell
+*http://127.0.0.1:5000/group-employees/2*
+curl --request GET \
+  --url http://127.0.0.1:5000/group-employees/2
+```
+
+<br>
+***http://<i></i>127.0.0.1:5000/employees***
+
+To get the list of all the existing employees in the database.
+
+
+<br>
+***http://<i></i>127.0.0.1:5000/employees/{employeeID}***
+
+Provide an employee ID to get information about a given employee, including name, group, username, and authority level.   
+If a user for that employee is not yet created, returns null values in the corresponding fields.   
+Returns an error status if non-existing employee requested.   
+Parameters: employeeID - integer
+
+<br>
+***http://<i></i>127.0.0.1:5000/users***
+
+GET request to /users to get the list of all existing users with corresponding authority levels. Protected.   
+Requires authority level 0 or 1.
+
+Example request:
+```shell
+*http://127.0.0.1:5000/users*
+curl --request GET \
+  --url http://127.0.0.1:5000/users \
+  --header 'Content-Type: application/json'
+```
+
+<br>
+***http://<i></i>127.0.0.1:5000/users/{employeeID}***
+
+Provide an employee ID in GET request to /users/{employeeID} to get information about a specific user.   
+Returns 500 status code if non-existing employee requested.   
+Protected, requires authority level 0 or 1.
+
+
+#### PUT
+***http://<i></i>127.0.0.1:5000/employees/{employeeID}***
+
+PUT to employees/{employeeID} will update the name of an employee with provided ID if they exist, will return an error message if not.   
+Required JSON fields: { "name" : new name string }  
+Will return 204 status code on success.  
+Protected: requires authority level 0 or 1.
+
+Example request:
+```shell
+*http://127.0.0.1:5000/employees/10*
+curl --request PUT \
+  --url http://127.0.0.1:5000/employees/103 \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"name" : "New API Test Name"
+}'
+```
+
+<br>
+***http://<i></i>127.0.0.1:5000/users/{employeeID}***
+
+PUT to /users/{employeeID} will change authority level for user associated with the provided ID.   
+If user or employee with that ID does not exist, will return status code 400.   
+Will return status code 204 on success.  
+Required fields: { "auth" : new authority level, integer }  
+Parameters: employeeID - integer  
+Protected: requires authority level 0 or 1
+
+
+#### DELETE
+***http://<i></i>127.0.0.1:5000/users/{employeeID}***
+
+DELETE to users/{employeeID} will delete the user associated with the employee with provided ID.  
+Returns status code 204 on success.  
+Protected: requires authority level 0 or 1.  
+Parameters: employeeID: integer
+
+Example request:
+```shell
+*http://127.0.0.1:5000/users/11
+curl --request DELETE \
+  --url http://127.0.0.1:5000/users/11 \
+  --header 'Content-Type: application/json'
+```
+
+<br>
+***http://<i></i>127.0.0.1:5000/employees/{employeeID}***
+
+DELETE to employees/{employeeID} will delete the employee with provided ID.   
+If a user associated with the employee exists in the database, it will be deleted first.  
+Protected: requires authority level 0 or 1.  
+Returns 204 on success.  
+Parameters: {employeeID}: integer
+
+<br>
+See [API Documentation](https://documenter.getpostman.com/view/5782719/RzZDhws9) for more request and response examples.
 
 ## Database
 [MySQL 8.0](https://dev.mysql.com/downloads/workbench/)
