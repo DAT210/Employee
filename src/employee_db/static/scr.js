@@ -85,7 +85,7 @@ function init() {
                           
                     
                     element.append(editBtn);
-                    element.append(" </br> <b>Username:</b> " + emp.username + "      <b>Authority:</b> " + emp.access_level);
+                    element.append(" </br> <b>Username:</b> " + emp.username + "<b>Authority:</b>" + emp.access_level);
     
                     
                     deleteBtn = $("<button type='button' class='btn btn-danger btn-sm' style='float: right;'><span class='glyphicon glyphicon-star'></span></button>").attr('id', 'remove'+emp.employee_id);
@@ -161,7 +161,7 @@ function groupList() {
                         
                     });
                     element.append(editBtn);
-                    element.append(" </br> <b>Username:</b> " + emp.username + "      <b>Authority:</b> " + emp.access_level);
+                    element.append(" </br> <b>Username:</b> " + emp.username + "<b>Authority:</b>" + emp.access_level);
     
                     
                     deleteBtn = $("<button type='button' class='btn btn-danger btn-sm' style='float: right;'><span class='glyphicon glyphicon-star'></span></button>").attr('id', 'remove'+emp.employee_id);
@@ -182,10 +182,6 @@ function groupList() {
                         });
                     });
                     element.append(deleteBtn);
-
-
-
-
                     groupParent.append(element);
                 });           
             }

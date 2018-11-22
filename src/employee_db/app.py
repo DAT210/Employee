@@ -39,17 +39,14 @@ def teardown_db(error):
 # user logged in
 def verify_token(f):
     @wraps(f)
-    def decorated(*args, **kwargs):
-        
-        token = request.cookies.get('token')
-        
+    def decorated(*args, **kwargs):        
+        token = request.cookies.get('token')        
         if not token:
             return jsonify({'message': 'No token provided!'}), 401
         try:
             result = jwt.decode(token, app.public_key, algorithms=['RS256'])
         except:
             return jsonify({'message': 'Invalid token!'}), 403
-
         return f(*args, **kwargs)
     return decorated
 
@@ -62,13 +59,11 @@ def verify_admin_token(f):
             return jsonify({'message': 'No token provided!'}), 401
         try:
             payload = jwt.decode(token, app.public_key, algorithms=['RS256'])
-            
         except:
             return jsonify({'message': 'Invalid token!'}), 403
 
         if payload['auth'] > 1:
             return jsonify({'message': 'Insufficient authority level!'}), 403
-
         return f(*args, **kwargs)
     return decorated
         
