@@ -1,18 +1,27 @@
 ![Logo of the project](./src/employee_db/static/images/logo.png)
 
 # Employee &middot; [![Build Status](https://img.shields.io/travis/npm/npm/latest.svg?style=flat-square)](https://travis-ci.org/npm/npm) [![npm](https://img.shields.io/npm/v/npm.svg?style=flat-square)](https://www.npmjs.com/package/npm) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/your/your-project/blob/master/LICENSE)
-> Employee is a service for logging in employees based on access_level. Admins can add, edit and delete employees.
+> Employee is a service for logging in employees based on access level. Admins can add, edit and delete employees. Users can view pages that belong to their employee level.
 
 ## Installing / Getting started
 
-A quick introduction of the minimal setup you need to get a hello world up &
-running.
+A quick introduction of the minimal setup you need to get the web app running.
 
 ```shell
-commands here
+git clone https://github.com/DAT210/Employee.git
+cd Employee/src/employee_db
+pip install flask
+pip install mysql-connector
+python app.py
 ```
 
-Here you should say what actually happens when you execute the code above.
+What happens when you execute these commands:
+1. Clones the project to your computer
+2. Change directory into the project you just cloned
+3. Installs requirements
+4. Runs the flask app
+
+(You need to have created a database. In the app.py file you will also need to adjust the database configs according to your local database settings e.g. change the password and database name)
 
 ## Developing
 
@@ -48,19 +57,7 @@ What happens when you execute these commands:
 
 
 ### Deploying / Publishing
-give instructions on how to build and release a new version
-In case there's some step you have to take that publishes this project to a
-server, this is the right time to state it.
-
-```shell
-packagemanager deploy your-project -s server.com -u username -p password
-```
-
-And again you'd need to tell what the previous code actually does.
-
-## Versioning
-
-We can maybe use [SemVer](http://semver.org/) for versioning. For the versions available, see the [link to tags on this repository](/tags).
+When new versions are pushed to the default branch, a deployment of the code will happen automatically. An Azure pipeline will then trigger a build pipeline that will push a new image, which will be deployed.
 
 
 ## Configuration
@@ -269,8 +266,3 @@ timesheet:
 * work_finish TIME
 * clock_in TIME
 * clock_out TIME
-
-
-## Licensing
-
-State what the license is and how to find the text version of the license.
