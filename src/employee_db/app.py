@@ -14,7 +14,7 @@ app.public_key = open('jwtRS256.key.pub').read()
 app.config['DB_USER'] = 'root'
 app.config['DB_PWD'] = 'root'
 app.config['DB'] = 'employee'
-app.config['DB_HOST'] = '192.168.99.100'
+app.config['DB_HOST'] = 'localhost'
 app.config['DB_PORT'] = '3306'
 
 
