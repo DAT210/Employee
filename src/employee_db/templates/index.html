@@ -1,0 +1,27 @@
+{% extends "proto.html" %}
+
+{% block content %}
+
+<form action="{{ url_for('logout') }}" method="post">
+        <button type="submit" class="btn btn-info btn-md" name="logout">Logout</button>
+        USER AUTHORITY: {{ user.access_level }}
+    </form>
+
+{% if user.group_id<2 %}
+{% include "hr.html" %}
+{% endif %}
+
+{% if user.group_id==2 or user.access_level==0 %}
+{% include "foodprep.html" %}
+{% endif %}
+
+{% if user.group_id==3 or user.access_level==0 %}
+{% include "delivery.html" %}
+{% endif %}
+
+{% if user.group_id==4 or user.access_level==0 %}
+{% include "serving.html" %}
+{% endif %}
+
+<div class="footer"> ... </div>
+{% endblock %}

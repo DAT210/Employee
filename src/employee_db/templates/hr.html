@@ -1,0 +1,92 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6" id="group_list">
+            <ul class="list-group">
+                    <li class="list-group-item list-group-item-dark" id="h0">Admin</li>
+                    <li class="list-group item"><ul class="list-group list-group-flush" id="group0"></ul></li>
+                    <li class="list-group-item list-group-item-dark" id="h1">HR</li>
+                    <li class="list-group item"><ul class="list-group list-group-flush" id="group1"></ul></li>
+                    <li class="list-group-item list-group-item-dark" id="h2">Food Preparation</li>
+                    <li class="list-group item"><ul class="list-group list-group-flush" id="group2"></ul></li>
+                    <li class="list-group-item list-group-item-dark" id="h3">Delivery</li>
+                    <li class="list-group item"><ul class="list-group list-group-flush" id="group3"></ul></li>
+                    <li class="list-group-item list-group-item-dark" id="h4">Serving</li>
+                    <li class="list-group item"><ul class="list-group list-group-flush" id="group4"></ul></li>
+
+            </ul>
+        
+        </div>
+        <div class="col-md-auto"> </div>
+        <div class="col-md-2 offset-md-1">
+            <h3>New employee:</h3>
+            <form action="{{ url_for('.add_an_employee') }}" method="POST" enctype='application/json'>
+                <div class="form-group">
+                    <label for="name">Employee name:</label>
+                    <input type="text" class="form-control" id="name" placeholder="Enter name" name="name">
+                </div>
+                <div class="form-group">
+                    <label for="group">Employee group:</label>
+                    <select class="form-control" id="group" name="group">
+                            {% for key, value in groups.items() %}
+                            <option>{{ key  }} : {{ value }}</option>
+                            {% endfor %}
+                        </select>  
+                </div>
+                    <button type="button" class="btn btn-primary btn-md" id="add_employee" name="add_employee">Add</button>
+            </form>
+  <!--    <h3>Edit employee: </h3>
+            <form action="#">
+                    <div class="form-group">
+                            <label for="edit_id">Employee ID:</label>
+                            <select class="form-control" id="edit_id" name="edit_id">
+                                {% for emp in employees %}
+                                <option>{{ emp.employee_id }}</option>
+                                {% endfor %}
+                            </select>    
+                        </div>
+                        <div class="form-group">
+                                <label for="edit_name">Employee name:</label>
+                                <input type="text" class="form-control" id="edit_name" placeholder="Enter name" name="edit_name">
+                            </div>
+
+            </form>
+            -->
+            
+
+
+        </div>
+        <div class="col-md-2"> 
+            <h3>New user:</h3>
+                <form action="{{ url_for('.create_user') }}" method="POST" enctype='application/json'>
+                        <div class="form-group">
+                            <label for="emp_id">Employee ID:</label>
+                            <select class="form-control" id="emp_id" name="emp_id">
+                                {% for emp in employees %}
+                                <option>{{ emp.employee_id }}</option>
+                                {% endfor %}
+                            </select>    
+                        </div>
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" class="form-control" id="username" placeholder="Enter username" name="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="text" class="form-control" id="password" placeholder="Enter password" name="password">
+                        </div>
+                        <div class="form-group">
+                            <label for="auth">Access level:</label>
+                            <select class="form-control" id="auth" name="auth">
+                                <option>1</option>
+                                <option>2</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            
+                        </div>
+                        <button type="button" class="btn btn-primary btn-md" name="add_user" id="add_user">Add</button>
+                    </form>
+        </div>
+    </div>
+</div>
+
