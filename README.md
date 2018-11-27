@@ -12,6 +12,7 @@ git clone https://github.com/DAT210/Employee.git
 cd Employee/src/employee_db
 pip install flask
 pip install mysql-connector
+pip install pyjwt
 python app.py
 ```
 
@@ -60,11 +61,6 @@ What happens when you execute these commands:
 When new versions are pushed to the default branch, a deployment of the code will happen automatically. An Azure pipeline will then trigger a build pipeline that will push a new image, which will be deployed.
 
 
-## Configuration
-
-Here you should write what are all of the configurations a user can enter when
-using the project.
-
 ## Tests
 
 Describe and show how to run the tests with code examples.
@@ -73,10 +69,6 @@ Explain what these tests test and why.
 ```shell
 Give an example
 ```
-
-## Style guide
-
-Explain your code style and show how to check it.
 
 ## Api Reference
 
