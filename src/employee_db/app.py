@@ -3,7 +3,6 @@ import jwt
 import datetime
 from functools import wraps
 import mysql.connector
-import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
 from util import *
 
@@ -44,7 +43,7 @@ def verify_token(f):
         if not token:
             return jsonify({'message': 'No token provided!'}), 401
         try:
-            result = jwt.decode(token, app.public_key, algorithms=['RS256'])
+            _ = jwt.decode(token, app.public_key, algorithms=['RS256'])
         except:
             return jsonify({'message': 'Invalid token!'}), 403
         return f(*args, **kwargs)
@@ -111,6 +110,8 @@ def login():
                 return resp
             return jsonify('Wrong password!'), 401
         return jsonify('Authentication failed!'), 401
+    
+    # if method: GET
     else:
         token = request.cookies.get('token')
         if not token:
@@ -131,15 +132,9 @@ def logout():
     session.pop('token', None)
     session.pop('user', None)
     resp = make_response(redirect(url_for('index')))
+    # setting auto-expiring cookie
     resp.set_cookie('token', '', max_age=0)
     return resp
-
-
-@app.route('/delete_employee_form/<emp_id>', methods=['POST'])
-@verify_admin_token
-def delete_employee_form(emp_id):
-    _ = remove_employee_by_id(get_db(), emp_id)
-    return redirect(url_for('login'))
 
 
 # API endpoints #
@@ -191,6 +186,7 @@ def edit_employee(emp_id):
         return resp
     except:
         return jsonify("Internal server error"), 500
+
 
 @app.route('/employees/<emp_id>', methods=['DELETE'])
 @verify_admin_token
@@ -258,6 +254,7 @@ def delete_user(emp_id):
 
 ## Misc ##
 
+# group codes - group names
 @app.route('/groups')
 @verify_token
 def get_groups():
@@ -267,41 +264,12 @@ def get_groups():
     except:
         return jsonify("Internal server error"), 500
 
+# all employees in a group
 @app.route('/group-employees/<group_id>', methods=['GET'])
 @verify_token
 def get_by_groups(group_id):
     resp = get_employees_by_group(get_db(), group_id)
     return resp
-
-
-@app.route("/addEmployee", methods=["POST"])
-def addEmployee():
-    emp_name = request.form.get("emp_name")
-    emp_group = request.form.get("emp_group")
-    success = True
-    db = get_db()
-    cur =db.cursor()
-    try:
-        cur.execute(queries["add_employee"], emp_name, emp_group)
-        cur.commit()
-    except mysql.connector.Error as err:
-        print("Error {}".format(err.msg))
-        success = False
-    finally:
-        cur.close()
-
-    if success is True:
-        print("Successful")
-        return render_template("")
-
-    else:
-        print("Failure")
-
-
-@app.route("/update/employee")
-def update(emp_id):
-
-    pass
 
 if __name__ == '__main__':
     app.run(debug=True)

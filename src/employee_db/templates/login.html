@@ -1,9 +1,10 @@
 {% extends "proto.html" %}
 
 {% block content %}
-
 <div class="container-fluid">
-    <div class="row">
+    <div class="row"></div>
+    <div class="row align-self-center">
+        <!--
             {% if not session['token'] %}
             <div class="col-md-2 align-self-center " id="test">
                 <table class="table table-bordered text-dark">
@@ -13,9 +14,10 @@
                 {% endfor %}
                 </table>
             </div>
-            {% endif %}
+            {% endif %} -->
+
             
-<div class="col-md-3"> </div>
+<div class="col-md-5"> </div>
 <div class="col-md-2 align-self-center " id="login">
         {% if not session['token'] %}
     <form action="{{ url_for('login') }}" method="post">

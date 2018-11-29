@@ -18,7 +18,7 @@ queries = {
     "update_access_level" : "UPDATE users SET access_lvl=%s WHERE emp_id=%s "
 }
 
-# fetch all the initial data from database 
+# fetch the initial data from database 
 
 def get_current_data(db):
     
@@ -37,7 +37,7 @@ def get_employee_list(db):
         cur = db.cursor()
 
         cur.execute(queries["get_all_employees"])
-        for (emp_id, emp_name, group_id, dupl, username, password, access_lvl) in cur:
+        for (emp_id, emp_name, group_id, _, username, password, access_lvl) in cur:
             the_list.append({
                 "employee_id": emp_id,
                 "name": emp_name,
@@ -102,6 +102,13 @@ def check_user(db, emp_id):
 
 # Employee methods #
 
+def get_employee(db, emp_id):
+    emp_list, _ = get_employee_list(db)
+    for emp in emp_list:
+        if emp['employee_id'] == int(emp_id):
+            return emp
+    return jsonify("No employee with that ID"), 400
+
 def add_employee(db, name, group_id):
     cur = db.cursor()
     try:
@@ -112,14 +119,6 @@ def add_employee(db, name, group_id):
         return jsonify("Internal server error"), 500
     finally:
         cur.close()
-    
-
-def get_employee(db, emp_id):
-    emp_list, _ = get_employee_list(db)
-    for emp in emp_list:
-        if emp['employee_id'] == int(emp_id):
-            return emp
-    return jsonify("No employee with that ID"), 400
 
 def remove_employee_by_id(db, emp_id):
     if not check_employee(db, emp_id):
@@ -138,8 +137,8 @@ def remove_employee_by_id(db, emp_id):
         cur.close()
 
 
+ #change the employee group
 def update_employee(db, emp_id, name, group_id):
-    #change the employee group
     cur = db.cursor()
     if not check_employee(db, emp_id):
         return jsonify("No employee with that ID"), 400
@@ -152,6 +151,7 @@ def update_employee(db, emp_id, name, group_id):
     finally:
         cur.close()
 
+# change the eployee name
 def update_employee_name(db, emp_id, name):
     if not check_employee(db,emp_id):
         return jsonify("No employee with that ID"), 400
@@ -180,6 +180,7 @@ def get_employees_by_group(db, group_id):
 
 # User methods #
 
+# it is only allowed to create users for existing employees
 def add_user(db, emp_id, username, password, access_level):
     cur = db.cursor()
     if not check_employee(db, emp_id):
@@ -193,7 +194,7 @@ def add_user(db, emp_id, username, password, access_level):
     finally:
         cur.close()
     
-
+# gets user by ID
 def get_user(db, emp_id):
     user_list = get_user_list(db)
     for user in user_list:
@@ -201,6 +202,7 @@ def get_user(db, emp_id):
             return user
     return jsonify("No user with that ID"), 400
 
+"""
 def remove_user(db, emp_id):
     cur = db.cursor()
     try:
@@ -211,6 +213,7 @@ def remove_user(db, emp_id):
         return jsonify("Internal server error"), 500
     finally:
         cur.close()
+        """
     
 
 def remove_user_by_id(db, emp_id):
@@ -226,9 +229,9 @@ def remove_user_by_id(db, emp_id):
     finally:
         cur.close()
 
-
+#change access lvl
 def update_access(db, emp_id, access_lvl):
-    #change access lvl
+    
     if not check_employee(db, emp_id):
         return jsonify("No user with that ID"), 400
     if not check_user(db, emp_id):

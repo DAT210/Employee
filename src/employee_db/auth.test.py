@@ -16,14 +16,12 @@ class authTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
 
     # logged in with correct credentials
-    
     def test_correct_login(self):
         tester = app.test_client(self)
         resp = tester.post('/login', data=dict(username='admin', password='admin'), follow_redirects=True)
         self.assertEqual(resp.status_code, 200)
 
     # logged in with incorrect credentials
-
     def test_incorrect_login(self):
         tester = app.test_client(self)
         resp = tester.post('/login', data=dict(username='admin', password='notadmin'), follow_redirects=True)
@@ -36,7 +34,6 @@ class authTestCase(unittest.TestCase):
         self.assertIn(b'Employee Database', resp.data)
         self.assertIn(b'USER AUTHORITY: 1', resp.data)
 
-
     # logged in employee group 1, not admin
     def test_group1_not_admin(self):
         tester = app.test_client(self)
@@ -44,9 +41,7 @@ class authTestCase(unittest.TestCase):
         self.assertIn(b'Employee Database', resp.data)
         self.assertIn(b'USER AUTHORITY: 2', resp.data)
 
-
     # logged in employee group 2, admin
-
     def test_group2_admin(self):
         tester = app.test_client(self)
         resp = tester.post('/login', data=dict(username='menu_admin', password='pass'), follow_redirects=True)
@@ -62,7 +57,6 @@ class authTestCase(unittest.TestCase):
         self.assertIn(b'USER AUTHORITY: 2', resp.data)
 
     # logged in employee group 3, not admin
-
     def test_group3_not_admin(self):
         tester = app.test_client(self)
         resp = tester.post('/login', data=dict(username='delivery_user', password='pass'), follow_redirects=True)
@@ -84,6 +78,8 @@ class authTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
 
     # attempts to reach enpoints without logging in
+    # correct statu code for any such request is 401
+
     def test_no_login_get_employees(self):
         tester = app.test_client(self)
         resp = tester.get('/employees', content_type='document/json')
