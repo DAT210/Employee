@@ -22,7 +22,7 @@ What happens when you execute these commands:
 3. Installs requirements
 4. Runs the flask app
 
-(You need to have created a database. In the app.py file you will also need to adjust the database configs according to your local database settings e.g. change the password and database name)
+(You need to have created a database. In the app.py file you will also need to adjust the database configs according to your local database settings e.g. change the password, database name etc.)
 
 ## Developing
 
@@ -33,6 +33,8 @@ What happens when you execute these commands:
   * PyJWT 1.6.4
 
 ### Prerequisites
+  * [Python](https://www.python.org/downloads/)
+  * [MySQL](https://dev.mysql.com/downloads/workbench/)
   * [Docker](https://www.docker.com/)
   * [GIT](https://git-scm.com/downloads)
 
@@ -60,14 +62,12 @@ What happens when you execute these commands:
 ### Deploying / Publishing
 When new versions are pushed to the default branch, a deployment of the code will happen automatically. An Azure pipeline will then trigger a build pipeline that will push a new image, which will be deployed.
 
-
 ## Tests
-
-Describe and show how to run the tests with code examples.
-Explain what these tests test and why.
-
+Unit tests for testing authorization functionality are presented in auth.test.py file.  
+Tests include: log in with correct and incorrect credentials, log in as admin and non-admin, log in as members of different employee groups, logout.  
+To run all the tests:
 ```shell
-Give an example
+python auth.test.py -v
 ```
 
 ## Api Reference
