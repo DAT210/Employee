@@ -63,7 +63,11 @@ When new versions are pushed to the default branch, a deployment of the code wil
 
 ## Tests
 Unit tests for testing authorization functionality are presented in auth.test.py file.  
- Tests include: log in with correct and incorrect credentials, log in as admin and non-admin, log in as members of different employee groups, logout.
+Tests include: log in with correct and incorrect credentials, log in as admin and non-admin, log in as members of different employee groups, logout.  
+To run all the tests:
+```shell
+python auth.test.py -v
+```
 
 ## Api Reference
 
