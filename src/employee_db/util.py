@@ -14,7 +14,7 @@ queries = {
     "remove_employee_by_id": "DELETE FROM employee WHERE emp_id=%s",
     "remove_user" : "DELETE FROM users WHERE emp_id=%s",
     "remove_employee" : "DELETE FROM employee WHERE emp_id=%s",
-    "update_employee" : "UPDATE employee SET emp_name=%s, group_id=%s WHERE emp_id=%s",
+    "update_employee" : "UPDATE employee SET emp_name=%s WHERE emp_id=%s",
     "update_access_level" : "UPDATE users SET access_lvl=%s WHERE emp_id=%s "
 }
 
@@ -105,14 +105,14 @@ def add_user(db, emp_id, username, password, access_level):
         cur.execute(queries["add_user"], (emp_id, username, password, access_level))
         db.commit()
     except mysql.connector.Error as err:
-        print("Error {}".format(err.msg))
+        return "Error {}".format(err.msg)
     finally:
         cur.close()
     return "User created"
 
 
 def get_employee(db, emp_id):
-    emp_list = get_employee_list(db)
+    emp_list, _ = get_employee_list(db)
     for emp in emp_list:
         if emp['employee_id'] == int(emp_id):
             return emp
@@ -131,7 +131,7 @@ def remove_user(db, emp_id):
         cur.execute(queries["remove_user"], emp_id)
         db.commit()
     except mysql.connector.Error as err:
-        print("Error {}".format(err.msg))
+        return "Error {}".format(err.msg)
     finally:
         cur.close()
     return "User deleted"
@@ -159,7 +159,6 @@ def remove_user_by_id(db, emp_id):
         cur.execute(queries["remove_user_by_id"] % emp_id)
         db.commit()
     except mysql.connector.Error as err:
-        print("Error {}".format(err.msg))
         return ("Error {}".format(err.msg))
     finally:
         cur.close()
@@ -199,7 +198,7 @@ def update_employee(db, emp_id, name, group_id):
 
 def update_employee_name(db, emp_id, name):
     if not check_employee(db,emp_id):
-        return "No employee with that name!"
+        return "No such employee!"
     cur = db.cursor()
     try:
         cur.execute(queries['update_employee'], (name, emp_id))
@@ -229,6 +228,6 @@ def get_employees_by_group(db, group_id):
     resp = []
     employees, _ = get_employee_list(db)
     for emp in employees:
-        if emp['employee_group_id'] == int(group_id):
+        if int(emp['employee_group_id']) == int(group_id):
             resp.append(emp)
     return resp
