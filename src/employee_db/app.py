@@ -8,12 +8,13 @@ from util import *
 
 app = Flask(__name__)
 
-app.secret_key = open('jwtRS256.key').read()  
+app.secret_key = open('jwtRS256.key').read()
 app.public_key = open('jwtRS256.key.pub').read()
 app.config['DB_USER'] = 'root'
 app.config['DB_PWD'] = 'root'
 app.config['DB'] = 'employee'
 app.config['DB_HOST'] = 'localhost'
+app.config['DB_PORT'] = '3306'
 
 
 def get_db():
@@ -22,7 +23,8 @@ def get_db():
             user = app.config['DB_USER'],
             host = app.config['DB_HOST'],
             password = app.config['DB_PWD'],
-            database = app.config['DB']
+            database = app.config['DB'],
+            port = app.config['DB_PORT']
         )
     return g._database
 
@@ -65,7 +67,7 @@ def verify_admin_token(f):
             return jsonify({'message': 'Insufficient authority level!'}), 403
         return f(*args, **kwargs)
     return decorated
-        
+
 # front end routes #
 
 @app.route("/")
@@ -84,7 +86,7 @@ def login():
     if request.method == 'POST':
         session.pop('token', None)
         session.pop('user', None)
-        
+
         if request.form['username'] in passwords.keys(): #valid user
             if check_password_hash(passwords[request.form['username']], request.form['password']): # valid password
                 group = auth = ''
@@ -208,7 +210,7 @@ def get_users():
 @app.route('/users', methods=['POST'])
 @verify_admin_token
 def create_user():
-    got = request.get_json()    
+    got = request.get_json()
     if got:
         id = got['ID']
         pwd = got['password']
@@ -220,7 +222,7 @@ def create_user():
         username = request.form['username']
         auth = request.form['auth']
 
-    
+
     if not check_employee(get_db(), id):
         return jsonify("No employee with ID " + str(id)), 400
 
@@ -272,4 +274,4 @@ def get_by_groups(group_id):
     return resp
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
