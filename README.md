@@ -12,6 +12,7 @@ git clone https://github.com/DAT210/Employee.git
 cd Employee/src/employee_db
 pip install flask
 pip install mysql-connector
+pip install pyjwt
 python app.py
 ```
 
